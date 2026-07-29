@@ -1,10 +1,4 @@
-/* =========================================================
-   GadgetVerse — search.js
-   Gadget catalog data + live search + category filtering +
-   product card rendering (used on products.html & index.html)
-========================================================= */
 
-/* ---------- Category tile icons (line-icon SVGs, no external images needed) ---------- */
 const TILE_ICONS = {
   phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="6" y1="18" x2="18" y2="18"/><circle cx="12" cy="20" r=".6" fill="currentColor" stroke="none"/></svg>`,
   laptop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M1 20h22l-2-4H3l-2 4Z"/></svg>`,
@@ -21,7 +15,7 @@ const CATEGORY_LABELS = {
   tv: "TVs"
 };
 
-/* ---------- Catalog ---------- */
+
 const GADGETS = [
   { id:"p1", name:"iPhone 16 Pro Max", brand:"Apple", category:"phone", price:1199, rating:9.5, review:"The most refined iPhone camera system yet, paired with the smoothest display Apple has shipped. Battery finally matches the ambition." },
   { id:"p2", name:"iPhone 16", brand:"Apple", category:"phone", price:799, rating:8.9, review:"Almost all the Pro's smarts in a lighter body — the sensible pick unless you shoot a lot of zoom." },
@@ -44,16 +38,15 @@ const GADGETS = [
   { id:"t4", name:"Sony Bravia XR A80L", brand:"Sony", category:"tv", price:1399, rating:8.8, review:"Sony's color science and motion processing are still unmatched — the remote and smart-TV software are not." },
 ];
 
-// Expose globally for other pages/scripts (index.html featured section, storage etc.)
+
 window.GADGETS = GADGETS;
 window.TILE_ICONS = TILE_ICONS;
 window.CATEGORY_LABELS = CATEGORY_LABELS;
 
-/* ---------- Ring badge markup builder (the site's signature score visual) ---------- */
 let __ringUid = 0;
 function buildRing(score /* 0-10 */, size = 52){
   const pct = Math.max(0, Math.min(10, score)) / 10;
-  const circumference = 175; // matches r=27.9 stroke path used in CSS (approx, purely visual)
+  const circumference = 175; 
   const offset = circumference - pct * circumference;
   const gradId = `ringGrad${++__ringUid}`;
   return `
@@ -72,7 +65,7 @@ function buildRing(score /* 0-10 */, size = 52){
     </div>`;
 }
 
-/* Animate all ring badges currently in the DOM (call after render + on scroll reveal) */
+
 function animateRings(scope = document){
   scope.querySelectorAll(".ring-fill").forEach(circle => {
     const offset = circle.getAttribute("data-offset");
@@ -80,7 +73,7 @@ function animateRings(scope = document){
   });
 }
 
-/* ---------- Placeholder stock photo helper (LoremFlickr — free, keyword-matched real photos) ---------- */
+
 const CATEGORY_KEYWORDS = {
   phone: "iphone,smartphone",
   laptop: "laptop,macbook",
@@ -89,8 +82,7 @@ const CATEGORY_KEYWORDS = {
   tv: "television,tv"
 };
 
-// Turns any string id into a stable positive integer, used as LoremFlickr's
-// "lock" param so the same product always gets the same photo on reload.
+
 function hashSeed(str){
   let hash = 0;
   for(let i = 0; i < str.length; i++){
@@ -100,7 +92,7 @@ function hashSeed(str){
   return Math.abs(hash) || 1;
 }
 
-/* ---------- Real product photos (user-supplied, keyed by GADGETS id) ---------- */
+
 const REAL_PHOTOS = {
   p1: "https://m.media-amazon.com/images/I/51Vs7ZwpSpL._AC_SX679_.jpg",
   p2: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-model-unselect-gallery-2-202409_GEO_IN?wid=5120&hei=2880&fmt=webp&qlt=90&.v=ZnlzVUZzRWd3dlg0RllqbHhQSUpKTGdzSmpObkZCM3MrNmJ5SkhESlNDaElTd0FWL0RrZVVSWUpsbHBzZEZDTjhLcXQxZ1h0QThIT2dnUm5qbGk5OUJkSERIUjY1Wk1Od3FtNjF6NFZLVXRUKzcvYzFXSU9zYjhqZ2pRRHlaK1BVd0cxVytZV0ZVQnV6YjdNc0g2T2t3&traceId=1",
@@ -157,7 +149,6 @@ function productCardHTML(g){
   </article>`;
 }
 
-/* ---------- Wishlist button wiring (delegated) ---------- */
 function wireWishlistButtons(scope = document){
   scope.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-wish]");
@@ -175,7 +166,6 @@ function wireWishlistButtons(scope = document){
   });
 }
 
-/* ---------- Simple toast ---------- */
 function showToast(msg){
   let toast = document.querySelector(".toast");
   if(!toast){
@@ -190,7 +180,6 @@ function showToast(msg){
   window.__toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
 }
 
-/* ---------- Product Details modal ---------- */
 function wireDetailsModal(scope = document){
   const modal = document.getElementById("detailsModal");
   if(!modal) return;
@@ -216,7 +205,6 @@ function wireDetailsModal(scope = document){
   modal.addEventListener("click", (e) => { if(e.target === modal) modal.classList.remove("open"); });
 }
 
-/* ---------- Products page: render + filter + search ---------- */
 function initProductsPage(){
   const grid = document.getElementById("productGrid");
   if(!grid) return;
@@ -278,7 +266,6 @@ function initProductsPage(){
   render();
 }
 
-/* ---------- Home page: featured + trending strips ---------- */
 function initHomeFeatured(){
   const featuredEl = document.getElementById("featuredGrid");
   const trendingEl = document.getElementById("trendingGrid");
@@ -295,12 +282,11 @@ function initHomeFeatured(){
     const chips = trending.map(g => `
       <div class="ticker-chip">${g.name} <span style="color:var(--grad-2)">·</span> $${g.price}</div>
     `).join("");
-    // duplicate the chip set once so the CSS marquee (-50%) loops seamlessly
+
     trendingEl.innerHTML = chips + chips;
   }
 }
 
-/* ---------- Live homepage stats (computed from the real catalog, never hardcoded/stale) ---------- */
 function initLiveStats(){
   const countEl = document.getElementById("statGadgetCount");
   if(countEl) countEl.textContent = GADGETS.length;

@@ -1,7 +1,3 @@
-/* =========================================================
-   GadgetVerse — gallery.js
-   Category-filterable image gallery + lightbox popup.
-========================================================= */
 
 const GALLERY_ITEMS = [
   { id:"g1",  productId:"p1", title:"iPhone 16 Pro Max — Studio Shot",     cat:"phone",   size:"tall",  copy:"Titanium frame under studio lighting." },

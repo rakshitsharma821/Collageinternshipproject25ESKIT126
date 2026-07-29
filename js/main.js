@@ -1,9 +1,4 @@
-/* =========================================================
-   GadgetVerse — main.js
-   Sitewide behavior shared across every page.
-========================================================= */
 
-/* ---------- Sticky Navbar ---------- */
 (function stickyNav(){
   const nav = document.querySelector(".navbar");
   if(!nav) return;
@@ -14,7 +9,7 @@
   window.addEventListener("scroll", onScroll, { passive: true });
 })();
 
-/* ---------- Mobile hamburger menu ---------- */
+
 (function mobileMenu(){
   const btn = document.querySelector(".hamburger");
   const links = document.querySelector(".nav-links");
@@ -29,7 +24,7 @@
   }));
 })();
 
-/* ---------- Active nav link (based on current file) ---------- */
+
 (function activeNav(){
   const path = location.pathname.split("/").pop() || "index.html";
   document.querySelectorAll(".nav-links a").forEach(a => {
@@ -55,14 +50,13 @@
   });
 })();
 
-/* ---------- Graceful fallback for hotlinked product photos that fail to load ---------- */
+
 document.addEventListener("error", (e) => {
   if(e.target && e.target.classList && e.target.classList.contains("media-photo")){
     e.target.style.display = "none";
   }
 }, true);
 
-/* ---------- Button ripple micro-interaction ---------- */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".btn, .icon-btn, .filter-chip, .slider-arrow");
   if(!btn) return;
@@ -78,7 +72,7 @@ document.addEventListener("click", (e) => {
   setTimeout(() => circle.remove(), 650);
 });
 
-/* ---------- Scroll reveal (IntersectionObserver) ---------- */
+
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if(entry.isIntersecting){
@@ -91,10 +85,7 @@ const revealObserver = new IntersectionObserver((entries) => {
 function revealAll(scope = document){
   scope.querySelectorAll(".reveal, .reveal-stagger").forEach(el => {
     revealObserver.observe(el);
-    // Safety net: force this element visible after 1.2s no matter what.
-    // Covers edge cases where the observer never fires (very short pages,
-    // fast automated screenshot tools that skip real scroll events, etc.)
-    // so content can never get stuck permanently invisible.
+   
     setTimeout(() => {
       el.classList.add("in-view");
       revealObserver.unobserve(el);
@@ -102,10 +93,7 @@ function revealAll(scope = document){
   });
 }
 
-// Makes elements visible immediately (still plays the CSS fade/slide transition,
-// just without waiting on scroll position or any timer). Used for grids that are
-// populated by JS (product cards, gallery tiles) so they can never render blank —
-// not even for a moment — regardless of how/when the page is captured or viewed.
+
 function revealNow(scope = document){
   scope.querySelectorAll(".reveal, .reveal-stagger").forEach(el => {
     revealObserver.unobserve(el);
@@ -142,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-count]").forEach(el => counterObserver.observe(el));
 });
 
-/* ---------- Back to top ---------- */
 (function backToTop(){
   const btn = document.querySelector(".back-to-top");
   if(!btn) return;
@@ -170,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
     });
 
-    // pre-fill if already subscribed
     if(typeof NewsletterStore !== "undefined" && NewsletterStore.get()){
       const note = form.querySelector(".form-note");
       if(note){ note.textContent = `Subscribed as ${NewsletterStore.get()}`; note.className = "form-note ok"; }
@@ -178,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ---------- Navbar quick search -> jumps to Products page ---------- */
 (function navQuickSearch(){
   const input = document.getElementById("navQuickSearch");
   if(!input) return;
@@ -189,7 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 })();
 
-/* ---------- Product category icon injection for the homepage category grid ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-cat-icon]").forEach(el => {
     const key = el.getAttribute("data-cat-icon");

@@ -581,14 +581,12 @@ footer{ border-top: 1px solid var(--border-soft); padding-top: 70px; margin-top:
 .back-to-top.show{ opacity: 1; visibility: visible; transform: translateY(0); }
 .back-to-top svg{ width: 20px; height: 20px; }
 
-/* ---------- Page hero (inner pages) ---------- */
 .page-hero{ padding: 168px 0 60px; text-align: center; position: relative; }
 .page-hero .eyebrow{ justify-content: center; }
 .page-hero p{ max-width: 560px; margin: 16px auto 0; }
 .breadcrumb{ font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-3); margin-top: 18px; }
 .breadcrumb span{ color: var(--grad-2); }
 
-/* ---------- Product details modal (reuses .lightbox positioning) ---------- */
 .modal-inner{ max-width: 460px; width: 100%; padding: 32px; text-align: left; position: relative; }
 .modal-icon{ width: 100%; aspect-ratio: 16/10; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; overflow: hidden; }
 .modal-icon svg{ width: 28%; height: 28%; color: #fff; }
@@ -599,7 +597,6 @@ footer{ border-top: 1px solid var(--border-soft); padding-top: 70px; margin-top:
 .modal-foot{ display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .modal-price{ font-family: var(--font-mono); font-weight: 700; font-size: 1.4rem; }
 
-/* toast for wishlist add etc */
 .toast{
   position: fixed; bottom: 26px; left: 26px; z-index: 2000;
   padding: 14px 20px; border-radius: var(--r-sm);

@@ -1,8 +1,4 @@
-/* =========================================================
-   GadgetVerse — slider.js
-   Auto-play carousel: manual arrows, dot navigation,
-   infinite loop, pauses on hover/focus.
-========================================================= */
+
 
 const SLIDES = [
   { tag: "Editor's Pick", cat: "phone",   productId: "p1", title: "iPhone 16 Pro Max sets the camera bar",       copy: "Three generations of computational photography land in one system. Read why it topped our 2026 shootout." },
@@ -63,7 +59,6 @@ function initSlider(){
   root.addEventListener("focusin", stopAutoplay);
   root.addEventListener("focusout", startAutoplay);
 
-  // basic touch swipe support
   let touchStartX = 0;
   track.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; stopAutoplay(); }, { passive: true });
   track.addEventListener("touchend", (e) => {

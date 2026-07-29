@@ -1,9 +1,4 @@
-/* =========================================================
-   GadgetVerse — storage.js
-   Central wrapper around localStorage for every persisted
-   feature: theme, wishlist, recently-viewed, contact draft,
-   newsletter subscription.
-========================================================= */
+
 
 const STORE_KEYS = {
   THEME: "gv_theme",
@@ -13,7 +8,6 @@ const STORE_KEYS = {
   NEWSLETTER: "gv_newsletter_email"
 };
 
-/* Safe read/write so a private-browsing quota error never breaks the page */
 function gvRead(key, fallback){
   try{
     const raw = localStorage.getItem(key);
@@ -33,13 +27,13 @@ function gvWrite(key, value){
   }
 }
 
-/* ---------- Theme ---------- */
+
 const ThemeStore = {
   get(){ return gvRead(STORE_KEYS.THEME, "dark"); },
   set(theme){ gvWrite(STORE_KEYS.THEME, theme); }
 };
 
-/* ---------- Wishlist ---------- */
+
 const WishlistStore = {
   all(){ return gvRead(STORE_KEYS.WISHLIST, []); },
   has(id){ return this.all().includes(id); },
@@ -53,7 +47,7 @@ const WishlistStore = {
   count(){ return this.all().length; }
 };
 
-/* ---------- Recently viewed ---------- */
+
 const RecentStore = {
   MAX: 6,
   all(){ return gvRead(STORE_KEYS.RECENT, []); },
@@ -66,20 +60,19 @@ const RecentStore = {
   }
 };
 
-/* ---------- Contact form draft (autosave) ---------- */
+
 const DraftStore = {
   save(data){ gvWrite(STORE_KEYS.DRAFT, data); },
   load(){ return gvRead(STORE_KEYS.DRAFT, null); },
   clear(){ try{ localStorage.removeItem(STORE_KEYS.DRAFT); }catch(e){} }
 };
 
-/* ---------- Newsletter ---------- */
+
 const NewsletterStore = {
   get(){ return gvRead(STORE_KEYS.NEWSLETTER, null); },
   set(email){ gvWrite(STORE_KEYS.NEWSLETTER, email); }
 };
 
-/* Update every wishlist-count badge present on the page (navbar icon etc.) */
 function refreshWishlistBadges(){
   const n = WishlistStore.count();
   document.querySelectorAll(".wishlist-count").forEach(el => {

@@ -1,8 +1,4 @@
-/* =========================================================
-   GadgetVerse — validation.js
-   Contact form: field validation, character limits,
-   inline error messages, draft autosave, success state.
-========================================================= */
+
 
 const CONTACT_RULES = {
   name:    { required: true, min: 2, max: 60 },
@@ -33,7 +29,7 @@ function initContactForm(){
   const successBox = document.getElementById("formSuccess");
   const fields = Object.keys(CONTACT_RULES);
 
-  // ----- Load saved draft -----
+
   const draft = typeof DraftStore !== "undefined" ? DraftStore.load() : null;
   if(draft){
     fields.forEach(f => {
@@ -44,7 +40,7 @@ function initContactForm(){
     if(note) note.textContent = "Draft restored from your last visit.";
   }
 
-  // ----- Character counter for message -----
+
   const messageEl = form.elements["message"];
   const countEl = document.getElementById("messageCount");
   function updateCount(){
@@ -53,7 +49,7 @@ function initContactForm(){
   messageEl?.addEventListener("input", updateCount);
   updateCount();
 
-  // ----- Autosave draft (debounced) -----
+
   let saveTimer = null;
   form.addEventListener("input", () => {
     clearTimeout(saveTimer);
@@ -66,7 +62,6 @@ function initContactForm(){
     }, 500);
   });
 
-  // ----- Live per-field validation -----
   fields.forEach(f => {
     const el = form.elements[f];
     if(!el) return;
@@ -94,7 +89,6 @@ function initContactForm(){
       return;
     }
 
-    // "Send" — no backend in this project, so simulate success
     successBox?.classList.add("show");
     form.reset();
     updateCount();
