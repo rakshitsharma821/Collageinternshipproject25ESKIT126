@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Products — GadgetVerse</title>
-<meta name="description" content="Browse every iPhone, MacBook, Asus and Acer laptop, Apple Watch, AirPods and TV reviewed by GadgetVerse.">
+<title>Products & Live Prices — GadgetVerse</title>
+<meta name="description" content="Browse laptops, smartphones, smartwatches, earbuds and TVs with live price comparisons across Amazon, Flipkart, and Croma.">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/responsive.css">
 <link rel="stylesheet" href="css/animations.css">
@@ -12,10 +12,10 @@
 </head>
 <body>
 
-
 <header class="navbar">
   <div class="container nav-inner">
     <a href="index.html" class="logo"><span class="logo-mark">GV</span> GadgetVerse</a>
+
     <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
@@ -23,19 +23,26 @@
       <a href="gallery.html">Gallery</a>
       <a href="contact.html">Contact</a>
     </nav>
+
     <div class="nav-actions">
-      <label class="nav-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-        <input type="text" id="navQuickSearch" placeholder="Search gadgets…" autocomplete="off">
-      </label>
+      <button class="motion-toggle-btn" aria-label="Toggle reduced motion" data-motion-toggle title="Reduce motion">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <span>Motion</span>
+      </button>
+
       <button class="icon-btn theme-toggle" aria-label="Toggle theme">
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
+
       <a href="products.html" class="icon-btn" aria-label="Wishlist">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.35-9.5-8.5C0.7 8 2 4.5 5.5 4.5c2 0 3.5 1.2 4.5 2.7C11 5.7 12.5 4.5 14.5 4.5 18 4.5 19.3 8 19.5 11.5 17 15.65 12 20 12 20Z"/></svg>
         <span class="wishlist-count">0</span>
       </a>
+
       <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -43,35 +50,34 @@
 
 <section class="page-hero container">
   <span class="eyebrow" style="justify-content:center">The Catalog</span>
-  <h1>Every gadget, <span class="text-grad">honestly scored.</span></h1>
-  <p>Filter by category or search by name — every card carries our Verdict Ring score straight from the lab.</p>
+  <h1>All Gadgets · <span class="text-grad">Live Store Prices</span></h1>
+  <p>Search by model or filter by category. Each card compares real prices from Amazon, Flipkart, and Croma.</p>
   <div class="breadcrumb">Home <span>/</span> Products</div>
 </section>
 
-
-<section class="section container" style="padding-top:24px">
+<section class="section container" style="padding-top:16px">
   <div class="toolbar">
     <div class="filter-row">
       <button class="filter-chip active" data-cat="all">All</button>
-      <button class="filter-chip" data-cat="phone">iPhones</button>
+      <button class="filter-chip" data-cat="phone">Smartphones</button>
       <button class="filter-chip" data-cat="laptop">Laptops</button>
-      <button class="filter-chip" data-cat="watch">Smart Watch</button>
+      <button class="filter-chip" data-cat="watch">Smart Watches</button>
       <button class="filter-chip" data-cat="earbuds">Earbuds</button>
       <button class="filter-chip" data-cat="tv">TVs</button>
     </div>
-    <label class="search-bar-lg glass">
+    <label class="search-bar-lg">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-      <input type="text" id="productSearch" placeholder="Search by name or brand…" autocomplete="off">
+      <input type="text" id="productSearch" placeholder="Search by name, brand, or feature..." autocomplete="off">
     </label>
   </div>
 
-  <p class="results-meta" id="resultsMeta">19 gadgets found</p>
+  <p class="results-meta" id="resultsMeta">Loading catalog...</p>
 
-  <div class="product-grid" id="productGrid"><!-- filled by search.js --></div>
+  <div class="product-grid" id="productGrid"></div>
 </section>
 
 <div class="lightbox" id="detailsModal">
-  <div class="lightbox-inner modal-inner glass">
+  <div class="modal-inner">
     <button class="lightbox-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <div class="modal-icon"></div>
     <div class="modal-top">
@@ -82,9 +88,9 @@
       <div class="modal-ring"></div>
     </div>
     <p class="modal-review"></p>
-    <div class="modal-foot">
-      <div class="modal-price"></div>
-      <button class="btn btn-primary btn-sm" data-wish="">Add to Wishlist</button>
+    <div class="modal-price"></div>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary btn-sm btn-block" data-wish="">Add to Wishlist</button>
     </div>
   </div>
 </div>
@@ -94,15 +100,10 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="index.html" class="logo"><span class="logo-mark">GV</span> GadgetVerse</a>
-        <p>Independent gadget testing and reviews since 2012. We buy what we test — no manufacturer loans, no sponsored scores.</p>
-        <div class="social-icons">
-          <a href="#" class="icon-btn" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 0 0-7 3.7A11.7 11.7 0 0 1 3.4 4.6a4.1 4.1 0 0 0 1.3 5.5c-.7 0-1.3-.2-1.9-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 0 1-1.9.1 4.1 4.1 0 0 0 3.9 2.9A8.3 8.3 0 0 1 2 18.4a11.6 11.6 0 0 0 6.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1Z"/></svg></a>
-          <a href="#" class="icon-btn" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
-          <a href="#" class="icon-btn" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5 15 12l-5 2.5Z" fill="currentColor" stroke="none"/></svg></a>
-        </div>
+        <p>Independent gadget price comparisons and lab evaluations. Compare real prices across Amazon, Flipkart, and Croma.</p>
       </div>
       <div class="footer-col">
-        <h4>Quick Links</h4>
+        <h4>Navigation</h4>
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="about.html">About Us</a></li>
@@ -121,18 +122,18 @@
           <li><a href="products.html?cat=tv">TVs</a></li>
         </ul>
       </div>
-      <div class="footer-col footer-newsletter">
-        <h4>Newsletter</h4>
-        <form data-newsletter-form>
-          <input type="email" placeholder="you@example.com" required>
-          <button type="submit" class="btn btn-primary btn-block btn-sm">Subscribe</button>
-        </form>
-        <div class="form-note"></div>
+      <div class="footer-col">
+        <h4>Stores</h4>
+        <ul>
+          <li><a href="https://www.amazon.in" target="_blank" rel="noopener noreferrer">Amazon India</a></li>
+          <li><a href="https://www.flipkart.com" target="_blank" rel="noopener noreferrer">Flipkart</a></li>
+          <li><a href="https://www.croma.com" target="_blank" rel="noopener noreferrer">Croma</a></li>
+        </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 GadgetVerse. All rights reserved.</span>
-      <span>Built with care for people who hate buyer's remorse.</span>
+      <span>© 2026 GadgetVerse. Real store price comparison.</span>
+      <span>No sponsored scores. No fabricated data.</span>
     </div>
   </div>
 </footer>

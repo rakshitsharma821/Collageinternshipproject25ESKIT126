@@ -5,7 +5,8 @@ const STORE_KEYS = {
   WISHLIST: "gv_wishlist",
   RECENT: "gv_recent_viewed",
   DRAFT: "gv_contact_draft",
-  NEWSLETTER: "gv_newsletter_email"
+  NEWSLETTER: "gv_newsletter_email",
+  MOTION: "gv_reduced_motion"
 };
 
 function gvRead(key, fallback){
@@ -29,8 +30,13 @@ function gvWrite(key, value){
 
 
 const ThemeStore = {
-  get(){ return gvRead(STORE_KEYS.THEME, "dark"); },
+  get(){ return gvRead(STORE_KEYS.THEME, "light"); },
   set(theme){ gvWrite(STORE_KEYS.THEME, theme); }
+};
+
+const MotionStore = {
+  get(){ return gvRead(STORE_KEYS.MOTION, false); },
+  set(val){ gvWrite(STORE_KEYS.MOTION, Boolean(val)); }
 };
 
 

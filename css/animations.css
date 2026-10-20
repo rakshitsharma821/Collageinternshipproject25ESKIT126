@@ -1,7 +1,10 @@
+/* =========================================================
+   GadgetVerse — Purposeful Animations & 3D Transitions
+========================================================= */
 
-
-@media (prefers-reduced-motion: reduce){
-  *, *::before, *::after{
+/* Global Reduced-Motion Media Query & Class Override */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
@@ -9,56 +12,100 @@
   }
 }
 
-
-@keyframes fadeIn{ from{ opacity: 0; } to{ opacity: 1; } }
-
-@keyframes slideUp{
-  from{ opacity: 0; transform: translateY(28px); }
-  to{ opacity: 1; transform: translateY(0); }
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }
 
-@keyframes float-orb{
-  0%, 100%{ transform: translate(0,0) scale(1); }
-  50%{ transform: translate(0,-22px) scale(1.05); }
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes marquee{
-  from{ transform: translateX(0); }
-  to{ transform: translateX(-50%); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes ripple-anim{
-  to{ transform: scale(3); opacity: 0; }
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-15deg) translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0deg) translateY(0);
+  }
 }
 
-@keyframes spin-slow{
-  to{ transform: rotate(360deg); }
+@keyframes scanline {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-@keyframes pulse-dot{
-  0%, 100%{ opacity: 1; } 50%{ opacity: 0.35; }
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-/* ---------- Scroll reveal ---------- */
-.reveal{ opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
-.reveal.in-view{ opacity: 1; transform: translateY(0); }
-.reveal-stagger.in-view > *{ animation: slideUp .6s cubic-bezier(.16,1,.3,1) both; }
-.reveal-stagger.in-view > *:nth-child(1){ animation-delay: .04s; }
-.reveal-stagger.in-view > *:nth-child(2){ animation-delay: .10s; }
-.reveal-stagger.in-view > *:nth-child(3){ animation-delay: .16s; }
-.reveal-stagger.in-view > *:nth-child(4){ animation-delay: .22s; }
-.reveal-stagger.in-view > *:nth-child(5){ animation-delay: .28s; }
-.reveal-stagger.in-view > *:nth-child(6){ animation-delay: .34s; }
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 
+/* Scanline Skeleton */
+.price-skeleton {
+  background: linear-gradient(90deg, var(--surface-subtle) 25%, var(--border) 50%, var(--surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: scanline 1.6s ease-in-out infinite;
+}
 
-.fade-in{ animation: fadeIn .8s ease both; }
-.slide-up{ animation: slideUp .7s cubic-bezier(.16,1,.3,1) both; }
-.delay-1{ animation-delay: .1s; }
-.delay-2{ animation-delay: .2s; }
-.delay-3{ animation-delay: .3s; }
+/* Scroll Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
 
-.hover-scale{ transition: transform .3s cubic-bezier(.16,1,.3,1); }
-.hover-scale:hover{ transform: scale(1.04); }
+.reveal-stagger.in-view > * {
+  animation: slideUp .5s cubic-bezier(.16,1,.3,1) both;
+}
+.reveal-stagger.in-view > *:nth-child(1) { animation-delay: .05s; }
+.reveal-stagger.in-view > *:nth-child(2) { animation-delay: .10s; }
+.reveal-stagger.in-view > *:nth-child(3) { animation-delay: .15s; }
+.reveal-stagger.in-view > *:nth-child(4) { animation-delay: .20s; }
+.reveal-stagger.in-view > *:nth-child(5) { animation-delay: .25s; }
+.reveal-stagger.in-view > *:nth-child(6) { animation-delay: .30s; }
 
-.pulse-live{ animation: pulse-dot 2s ease-in-out infinite; }
-.spin-slow{ animation: spin-slow 14s linear infinite; }
+.fade-in { animation: fadeIn .6s ease both; }
+.slide-up { animation: slideUp .6s cubic-bezier(.16,1,.3,1) both; }
+.delay-1 { animation-delay: .1s; }
+.delay-2 { animation-delay: .2s; }
+.delay-3 { animation-delay: .3s; }
+
+/* Product Card Entrance Stagger */
+.product-card.reveal.in-view {
+  animation: cardEntrance .55s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* Odometer Roll Animation */
+.odometer-digit {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+  vertical-align: top;
+}
+.odometer-ribbon {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
