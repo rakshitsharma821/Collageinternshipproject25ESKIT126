@@ -24,21 +24,26 @@ GadgetVerse is a product-comparison platform featuring live store price intellig
    - `public.tracked_products` with target price validations.
    - `public.gadgets` catalog table with public read policy and service-role write policy.
 
-### Idempotent Catalog Seeding
-To populate the 19 tested gadgets from `data/gadgets.json`:
+### Removing the 19 Seeded Products (Transition to Search-First Comparison)
+To remove the initial 19 demo seed rows (`p1..p3`, `l1..l6`, `w1..w3`, `e1..e3`, `t1..t4`) safely without dropping the schema, tables, or user-tracked products:
 
+**Option A: Supabase Dashboard SQL Editor (Recommended)**
+1. Open the [Supabase Dashboard SQL Editor](https://supabase.com/dashboard).
+2. Copy and execute [`supabase/migrations/20261020_remove_seeded_catalog.sql`](file:///D:/collage%20project/Collageinternshipproject25ESKIT126/supabase/migrations/20261020_remove_seeded_catalog.sql).
+3. Confirm the row count returned is 0 remaining seed items.
+
+**Option B: Terminal with Service Role Key**
 ```bash
-# In your terminal (set your Supabase service role key):
 $env:SUPABASE_URL="https://your-project.supabase.co"
 $env:SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
-node supabase/seed.js
+node supabase/seed.js --delete-seeded
 ```
 
-> **Note on Data Integrity**: The seeder strictly validates and sanitizes all records against schema columns (`id`, `name`, `brand`, `category`, `image_url`, `review`, `rating`). No pricing fields are ever stored in the catalog database; all store prices are retrieved dynamically.
+> **Automatic Seeding Disabled**: The seeder now runs strictly on-demand. Catalog seeding only executes when explicitly invoked with `--force-seed`. No pricing fields are ever stored in the catalog database; all store prices are retrieved dynamically.
 
 ---
 
-## 2. Environment Variables
+## 2. Environment Variables & Store Credentials
 
 Configure the following environment variables in Netlify (`Site configuration > Environment variables`) or your local environment:
 
@@ -46,11 +51,17 @@ Configure the following environment variables in Netlify (`Site configuration > 
 |---|---|---|
 | `SUPABASE_URL` | Server & Client | Your Supabase project base URL (e.g. `https://xyz.supabase.co`). |
 | `SUPABASE_ANON_KEY` | Server & Client | Your Supabase public anonymous/publishable key. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server Only | Supabase admin key used exclusively for catalog seeding. Never expose on the frontend. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server Only | Supabase admin key used exclusively for catalog migrations. Never expose on the frontend. |
+| `AMAZON_ACCESS_KEY` | Server Only | Amazon Product Advertising API (PA-API v5) access key. |
+| `AMAZON_SECRET_KEY` | Server Only | Amazon PA-API secret key. |
+| `AMAZON_PARTNER_TAG` | Server Only | Amazon Associate store tag. |
+| `FLIPKART_AFFILIATE_ID` | Server Only | Flipkart Affiliate Program Tracking ID. |
+| `FLIPKART_AFFILIATE_TOKEN` | Server Only | Flipkart Affiliate API access token. |
+| `CROMA_API_KEY` | Server Only | Croma Enterprise Partner API key. |
 
 ---
 
-## 3. Serverless API Endpoints
+## 3. Search-First Serverless API Endpoints
 
 ### `GET /api/gadgets`
 Retrieves products from the Supabase `gadgets` table.
@@ -65,35 +76,51 @@ Retrieves products from the Supabase `gadgets` table.
   - `500 Server Error`: Missing database environment variables.
   - `502 Bad Gateway`: Database connection or schema table error (strictly no silent fallback).
 
-### `GET /api/compare`
-Queries supported e-commerce retailers in parallel for real-time prices.
+### `GET /api/compare?q=...`
+Searches stores directly for the user's query using modular store adapters (`StoreRegistry`), normalizes prices into INR, and performs variant-aware comparability checks.
 - **Query Parameters**:
   - `q` *(required)*: Product name or search term (2–100 chars).
 - **Responses**:
-  - `200 OK`: `{ success: true, query: "...", cheapest: {...}, offers: [...], fetchedAt: "..." }`
+  - `200 OK`:
+    ```json
+    {
+      "success": true,
+      "query": "iPhone 16",
+      "cheapest": { "store": "amazon", "price": 76999, "url": "..." },
+      "offers": [ ... ],
+      "fetchedAt": "2026-10-20T12:00:00.000Z"
+    }
+    ```
   - `400 Bad Request`: Missing, too short (< 2 chars), or too long (> 100 chars) query.
   - `405 Method Not Allowed`: Non-GET HTTP method.
 
+### Variant-Aware Matching Rules
+- Storage tiers (e.g., `128GB` vs `256GB`) are distinguished and not cross-matched.
+- Model tiers (e.g., base `iPhone 16` vs `Pro` vs `Pro Max`) are validated.
+- Low-cost accessories (cases, screen protectors, cables) are strictly rejected from being chosen as the cheapest offer.
+
 ---
 
-## 4. Known Store Integration Limitations
+## 4. Store Adapters & Integration Status
 
-1. **Amazon India (`amazon`)**:
-   - Parses server-rendered HTML search listings (`a-price-whole`, `a-offscreen`).
-   - If Amazon detects high-frequency automated traffic from datacenter IPs, it serves an anti-bot verification challenge ("Robot Check"). The scraper detects this and returns an informative challenge status alongside the direct search URL.
-2. **Flipkart (`flipkart`)**:
-   - Parses server-rendered product cards (`data-id`, `₹` price containers).
-   - Flipkart regularly updates obfuscated CSS class names; the parser employs resilient regular expressions matching structured INR price tokens inside product listings.
-3. **Croma (`croma`)**:
+All store queries operate through the `BaseStoreAdapter` interface ([`lib/adapters/base.js`](file:///D:/collage%20project/Collageinternshipproject25ESKIT126/lib/adapters/base.js)).
+
+1. **Amazon India (`AmazonAdapter`)**:
+   - Queries PA-API v5 when official credentials (`AMAZON_ACCESS_KEY`, etc.) are provided.
+   - Transparently falls back to resilient HTML parser with anti-bot challenge detection when credentials are not configured.
+2. **Flipkart (`FlipkartAdapter`)**:
+   - Queries Flipkart Affiliate API when `FLIPKART_AFFILIATE_ID` is present.
+   - Transparently falls back to listing price parser with direct search URL preservation.
+3. **Croma (`CromaAdapter`)**:
    - Croma's storefront operates as a client-side Single Page Application (SPA).
-   - In a pure HTTP serverless backend request, Croma returns the initial unhydrated HTML application shell where products have not yet rendered. The scraper transparently reports that JavaScript rendering is required and provides the direct Croma search link without fabricating fake prices.
+   - Reports that client-side JS rendering or official enterprise partner API (`CROMA_API_KEY`) is required, preserving direct search links without fabricating prices.
 
 ---
 
 ## 5. Local Testing & Verification
 
 ### Run Automated Unit & Mocked Integration Tests
-All 37 unit and integration tests run hermetically without external network dependencies:
+All 49 unit and integration tests run hermetically without external network dependencies:
 ```bash
 node --test tests/*.test.js
 ```

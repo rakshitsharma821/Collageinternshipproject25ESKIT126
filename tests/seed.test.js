@@ -3,10 +3,54 @@ import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { sanitizeGadgetItem, loadAndSanitizeSeedData } from "../supabase/seed.js";
+import {
+  sanitizeGadgetItem,
+  loadAndSanitizeSeedData,
+  removeSeededCatalog,
+  SEEDED_GADGET_IDS
+} from "../supabase/seed.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+test("SEEDED_GADGET_IDS lists exactly the 19 legacy seed items", () => {
+  assert.strictEqual(SEEDED_GADGET_IDS.length, 19);
+  assert.ok(SEEDED_GADGET_IDS.includes("p1"));
+  assert.ok(SEEDED_GADGET_IDS.includes("l1"));
+  assert.ok(SEEDED_GADGET_IDS.includes("w1"));
+  assert.ok(SEEDED_GADGET_IDS.includes("e1"));
+  assert.ok(SEEDED_GADGET_IDS.includes("t1"));
+});
+
+test("removeSeededCatalog explicitly deletes by target IDs without dropping tables", async () => {
+  let targetTable = null;
+  let targetIds = null;
+
+  const mockClient = {
+    from: (table) => {
+      targetTable = table;
+      return {
+        delete: () => ({
+          in: (col, ids) => {
+            targetIds = ids;
+            return {
+              select: () => Promise.resolve({
+                data: ids.map((id) => ({ id, name: `Item ${id}` })),
+                error: null
+              })
+            };
+          }
+        })
+      };
+    }
+  };
+
+  const res = await removeSeededCatalog(mockClient);
+  assert.strictEqual(targetTable, "gadgets");
+  assert.deepStrictEqual(targetIds, SEEDED_GADGET_IDS);
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.deletedCount, 19);
+});
 
 test("data/gadgets.json contains valid catalog without any price fields", () => {
   const dataPath = path.resolve(__dirname, "../data/gadgets.json");

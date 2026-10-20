@@ -1,5 +1,6 @@
-// Seed script to populate Supabase gadgets table from data/gadgets.json
-// Idempotently upserts gadgets and guarantees NO price fields are inserted.
+// Seed & Migration Management Script for GadgetVerse
+// Note: Static catalog seeding is deprecated in favor of live, search-driven comparison.
+
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,11 +12,19 @@ const __dirname = path.dirname(__filename);
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://dlpjtgbpfqkmtemxgxiq.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
+export const SEEDED_GADGET_IDS = Object.freeze([
+  "p1", "p2", "p3",
+  "l1", "l2", "l3", "l4", "l5", "l6",
+  "w1", "w2", "w3",
+  "e1", "e2", "e3",
+  "t1", "t2", "t3", "t4"
+]);
+
 export const ALLOWED_CATEGORIES = new Set(["phone", "laptop", "watch", "earbuds", "tv"]);
 
 /**
  * Sanitizes a gadget item to strictly adhere to the database schema.
- * Explicitly excludes any pricing fields to ensure prices are never stored in the catalog.
+ * Strictly excludes any pricing fields to prevent storing stale prices.
  */
 export function sanitizeGadgetItem(item) {
   if (!item || typeof item !== "object") {
@@ -36,7 +45,6 @@ export function sanitizeGadgetItem(item) {
 
   const cleanRating = typeof rating === "number" && !isNaN(rating) ? Number(rating.toFixed(2)) : null;
 
-  // Explicitly return only schema-defined columns, strictly omitting any price
   return {
     id: id.trim(),
     name: name.trim(),
@@ -60,6 +68,33 @@ export function loadAndSanitizeSeedData(filePath) {
   return rawGadgets.map(sanitizeGadgetItem);
 }
 
+/**
+ * Safely and explicitly deletes only the 19 known seeded gadget rows.
+ * Requires service_role key to satisfy RLS policies.
+ */
+export async function removeSeededCatalog(supabaseClient) {
+  const client = supabaseClient || createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const { data, error } = await client
+    .from("gadgets")
+    .delete()
+    .in("id", SEEDED_GADGET_IDS)
+    .select("id, name");
+
+  if (error) {
+    throw new Error(`Failed to remove seeded catalog [${error.code}]: ${error.message}`);
+  }
+
+  return {
+    success: true,
+    deletedCount: data ? data.length : 0,
+    deletedItems: data || []
+  };
+}
+
+/**
+ * Explicit seed function (opt-in only via --force-seed).
+ */
 export async function runSeed(supabaseClient, sanitizedGadgets) {
   const gadgets = sanitizedGadgets || loadAndSanitizeSeedData();
   const client = supabaseClient || createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -81,24 +116,51 @@ export async function runSeed(supabaseClient, sanitizedGadgets) {
 }
 
 async function cli() {
-  if (!SUPABASE_KEY) {
-    console.error("Error: Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY environment variable.");
-    console.error("Usage: SUPABASE_SERVICE_ROLE_KEY=<service_key> node supabase/seed.js");
-    process.exit(1);
+  const args = process.argv.slice(2);
+
+  if (args.includes("--delete-seeded")) {
+    if (!SUPABASE_KEY) {
+      console.error("Error: Deleting seeded catalog rows requires SUPABASE_SERVICE_ROLE_KEY.");
+      console.error("Usage: SUPABASE_SERVICE_ROLE_KEY=<service_key> node supabase/seed.js --delete-seeded");
+      process.exit(1);
+    }
+    console.log(`Executing safe deletion of 19 seed IDs from public.gadgets...`);
+    try {
+      const res = await removeSeededCatalog(null);
+      console.log(`Success: Deleted ${res.deletedCount} seed rows from public.gadgets.`);
+    } catch (err) {
+      console.error("Deletion error:", err.message);
+      process.exit(1);
+    }
+    return;
   }
 
-  console.log(`Loading seed data from data/gadgets.json...`);
-  const gadgets = loadAndSanitizeSeedData();
-  console.log(`Sanitized ${gadgets.length} gadgets (strictly zero prices).`);
-
-  console.log(`Upserting to Supabase at ${SUPABASE_URL}...`);
-  try {
-    const res = await runSeed(null, gadgets);
-    console.log(`Successfully seeded ${res.count} gadgets to 'public.gadgets' table.`);
-  } catch (err) {
-    console.error("Seeding failed:", err.message);
-    process.exit(1);
+  if (args.includes("--force-seed")) {
+    if (!SUPABASE_KEY) {
+      console.error("Error: Seeding catalog requires SUPABASE_SERVICE_ROLE_KEY.");
+      process.exit(1);
+    }
+    console.log("Seeding catalog (strictly without price fields)...");
+    try {
+      const res = await runSeed(null);
+      console.log(`Successfully seeded ${res.count} items.`);
+    } catch (err) {
+      console.error("Seeding error:", err.message);
+      process.exit(1);
+    }
+    return;
   }
+
+  console.log("------------------------------------------------------------------");
+  console.log("Notice: Static 19-product catalog seeding is disabled by default.");
+  console.log("GadgetVerse now uses search-first, live retailer price comparisons.");
+  console.log("");
+  console.log("To delete the 19 legacy seed rows from public.gadgets:");
+  console.log("  SUPABASE_SERVICE_ROLE_KEY=<key> node supabase/seed.js --delete-seeded");
+  console.log("");
+  console.log("Or execute the migration SQL in your Supabase SQL Editor:");
+  console.log("  supabase/migrations/20261020_remove_seeded_catalog.sql");
+  console.log("------------------------------------------------------------------");
 }
 
 if (process.argv[1] === __filename) {

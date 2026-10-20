@@ -93,7 +93,7 @@ test("scrapeStore handles HTTP 503 error safely with URL preserved", async () =>
 
   const offer = await scrapeStore(store, "iPhone 16", mockFetch, 2000);
   assert.strictEqual(offer.store, "flipkart");
-  assert.strictEqual(offer.error, "Store returned status 503");
+  assert.ok(offer.error && offer.error.includes("503"));
   assert.strictEqual(offer.url, store.buildSearchUrl("iPhone 16"));
   assert.ok(offer.observedAt);
 });

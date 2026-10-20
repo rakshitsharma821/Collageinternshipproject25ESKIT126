@@ -125,7 +125,7 @@ async function fetchCatalog() {
       const res = await fetch("/api/gadgets");
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data)) {
           window.GADGETS = json.data;
           if (window.GadgetCache) {
             window.GadgetCache.writeStorageCache(sessionStorage, "gv:catalog", json.data);
@@ -134,24 +134,7 @@ async function fetchCatalog() {
         }
       }
     } catch (err) {
-      console.warn("API /api/gadgets unreachable, trying static fallback:", err);
-    }
-
-    // 4. Static fallback to data/gadgets.json
-    try {
-      const res = await fetch("data/gadgets.json");
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          window.GADGETS = data;
-          if (window.GadgetCache) {
-            window.GadgetCache.writeStorageCache(sessionStorage, "gv:catalog", data);
-          }
-          return data;
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load catalog data:", err);
+      console.warn("API /api/gadgets unreachable:", err);
     }
 
     return window.GADGETS || [];
@@ -517,10 +500,13 @@ async function initProductsPage() {
     }
 
     if (filtered.length === 0) {
+      const emptyMsg = term
+        ? `No gadgets match "<strong>${term}</strong>". Try a different search or filter.`
+        : `No catalog products loaded. Use the search bar above to compare live prices across stores.`;
       grid.innerHTML = `
         <div class="empty-state" style="grid-column:1/-1">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-          <p>No gadgets match "<strong>${term || CATEGORY_LABELS[activeCategory] || ""}</strong>". Try a different search or filter.</p>
+          <p>${emptyMsg}</p>
         </div>`;
       return;
     }

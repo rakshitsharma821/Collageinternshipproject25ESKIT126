@@ -4,6 +4,8 @@ import {
   normalizeTitle,
   parsePrice,
   calculateSimilarity,
+  extractProductAttributes,
+  checkOfferComparability,
   findCheapestOffer,
   rankResults,
   formatPriceINR
@@ -31,6 +33,48 @@ test("calculateSimilarity scores token overlaps accurately", () => {
   assert.strictEqual(calculateSimilarity(query, title2), 0);
 });
 
+test("extractProductAttributes correctly parses model tier, storage, and accessories", () => {
+  const phone = extractProductAttributes("Apple iPhone 16 Pro Max (256 GB) - Desert Titanium");
+  assert.strictEqual(phone.brand, "apple");
+  assert.strictEqual(phone.tier, "pro max");
+  assert.strictEqual(phone.storage, 256);
+  assert.strictEqual(phone.isAccessory, false);
+
+  const accessory = extractProductAttributes("Spigen Ultra Hybrid Back Case Cover for iPhone 16 Pro Max");
+  assert.strictEqual(accessory.isAccessory, true);
+  assert.strictEqual(accessory.tier, "pro max");
+
+  const laptop = extractProductAttributes("Apple MacBook Pro 16 M4 Pro (48 GB RAM, 1 TB SSD)");
+  assert.strictEqual(laptop.storage, 1024);
+  assert.strictEqual(laptop.ram, 48);
+  assert.strictEqual(laptop.chip, "m4 pro");
+});
+
+test("checkOfferComparability prevents comparing accessories or mismatched tiers", () => {
+  const queryPhone = "iPhone 16 128GB";
+  const offerAcc = "Silicon Case Cover for iPhone 16 128GB";
+  const checkAcc = checkOfferComparability(queryPhone, offerAcc);
+  assert.strictEqual(checkAcc.comparable, false);
+  assert.ok(checkAcc.reason.includes("accessory"));
+
+  const queryBase = "iPhone 16";
+  const offerPro = "Apple iPhone 16 Pro 128GB";
+  const checkTier = checkOfferComparability(queryBase, offerPro);
+  assert.strictEqual(checkTier.comparable, false);
+  assert.ok(checkTier.reason.includes("Variant mismatch"));
+
+  const queryStorage = "iPhone 16 128GB";
+  const offerStorage = "Apple iPhone 16 256GB";
+  const checkStorage = checkOfferComparability(queryStorage, offerStorage);
+  assert.strictEqual(checkStorage.comparable, false);
+  assert.ok(checkStorage.reason.includes("Storage mismatch"));
+
+  const queryMatch = "iPhone 16 128GB";
+  const offerMatch = "Apple iPhone 16 (128 GB) - Ultramarine";
+  const checkMatch = checkOfferComparability(queryMatch, offerMatch);
+  assert.strictEqual(checkMatch.comparable, true);
+});
+
 test("findCheapestOffer identifies lowest valid offer correctly", () => {
   const offers = [
     { store: "flipkart", price: 124999 },
@@ -56,6 +100,25 @@ test("rankResults sorts by price ascending and identifies cheapest with youSave"
   assert.strictEqual(ranked[0].youSave, 5000); // 124999 - 119999
   assert.strictEqual(ranked[1].best, false);
   assert.strictEqual(ranked[2].best, false);
+});
+
+test("rankResults with query rejects non-comparable accessory from being crowned cheapest", () => {
+  const raw = [
+    { store: "flipkart", price: 79999, title: "Apple iPhone 16 (128 GB)" },
+    { store: "amazon", price: 76999, title: "Apple iPhone 16 (128 GB)" },
+    { store: "croma", price: 999, title: "Clear Case Cover for iPhone 16" } // Cheap accessory!
+  ];
+
+  const ranked = rankResults(raw, "iPhone 16");
+  assert.strictEqual(ranked[0].store, "amazon");
+  assert.strictEqual(ranked[0].price, 76999);
+  assert.strictEqual(ranked[0].best, true);
+  assert.strictEqual(ranked[0].youSave, 3000); // 79999 - 76999
+
+  // The 999 case should NOT be marked best
+  const caseOffer = ranked.find((o) => o.price === 999);
+  assert.strictEqual(caseOffer.comparable, false);
+  assert.strictEqual(caseOffer.best, false);
 });
 
 test("rankResults places errored stores at the bottom", () => {
