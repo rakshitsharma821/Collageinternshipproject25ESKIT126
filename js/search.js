@@ -1,4 +1,4 @@
-// GadgetVerse Live Catalog, Price Comparison, and Search Engine
+// GadgetVerse Live Catalog, Price Comparison, 3D Odometer & Search Engine
 
 const TILE_ICONS = {
   phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="6" y1="18" x2="18" y2="18"/><circle cx="12" cy="20" r=".6" fill="currentColor" stroke="none"/></svg>`,
@@ -226,6 +226,31 @@ async function fetchPricesForGadget(gadget) {
   return promise;
 }
 
+function renderOdometerHTML(priceStr) {
+  const isReduced =
+    document.body.classList.contains("reduced-motion") ||
+    (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  if (isReduced) return priceStr;
+
+  const chars = priceStr.split("");
+  return chars
+    .map((ch, idx) => {
+      if (/[0-9]/.test(ch)) {
+        const d = parseInt(ch, 10);
+        return `
+        <span class="odometer-digit" style="display:inline-block;height:1.25em;overflow:hidden;vertical-align:bottom">
+          <span class="odometer-ribbon" style="display:flex;flex-direction:column;transform:translateY(-${d * 10}%);transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.04}s">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+          </span>
+        </span>
+      `;
+      }
+      return `<span>${ch}</span>`;
+    })
+    .join("");
+}
+
 function productCardHTML(g) {
   const isWished = typeof WishlistStore !== "undefined" && WishlistStore.has(g.id);
   const imgUrl = g.image_url || photoURL(g.id, g.category);
@@ -266,10 +291,14 @@ function updateCardPriceUI(cardEl, priceData) {
   if (!slot) return;
 
   if (priceData && priceData.cheapest && priceData.cheapest.price) {
-    const formatted = window.GadgetMatch ? window.GadgetMatch.formatPriceINR(priceData.cheapest.price) : `₹${priceData.cheapest.price.toLocaleString("en-IN")}`;
+    const rawFormatted = window.GadgetMatch
+      ? window.GadgetMatch.formatPriceINR(priceData.cheapest.price)
+      : `₹${priceData.cheapest.price.toLocaleString("en-IN")}`;
+    const odometerHTML = renderOdometerHTML(rawFormatted);
+
     slot.innerHTML = `
       <div class="price-row">
-        <span class="price-val mono">${formatted}</span>
+        <span class="price-val mono">${odometerHTML}</span>
         <span class="cheapest-badge" style="background:${priceData.cheapest.color || "#15803d"}">Cheapest on ${priceData.cheapest.name}</span>
       </div>
       <div class="store-links-mini">
@@ -459,7 +488,19 @@ async function initProductsPage() {
     chips.forEach((c) => c.classList.toggle("active", c.getAttribute("data-cat") === urlCat));
   }
 
-  function render() {
+  function render(useFlip = false) {
+    const isReduced =
+      document.body.classList.contains("reduced-motion") ||
+      (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    // FLIP First state
+    const firstPositions = new Map();
+    if (useFlip && !isReduced) {
+      grid.querySelectorAll(".product-card").forEach((card) => {
+        firstPositions.set(card.getAttribute("data-id"), card.getBoundingClientRect());
+      });
+    }
+
     const term = (searchInput?.value || "").trim().toLowerCase();
     const filtered = (window.GADGETS || []).filter((g) => {
       const matchesCat = activeCategory === "all" || g.category === activeCategory;
@@ -489,21 +530,42 @@ async function initProductsPage() {
     if (typeof revealNow === "function") revealNow(grid);
     populateCardPrices(grid);
     if (typeof initTiltEffects === "function") initTiltEffects(grid);
+
+    // FLIP Last, Invert, Play
+    if (useFlip && !isReduced && firstPositions.size > 0) {
+      grid.querySelectorAll(".product-card").forEach((card) => {
+        const id = card.getAttribute("data-id");
+        if (firstPositions.has(id)) {
+          const first = firstPositions.get(id);
+          const last = card.getBoundingClientRect();
+          const dx = first.left - last.left;
+          const dy = first.top - last.top;
+          if (dx !== 0 || dy !== 0) {
+            card.style.transform = `translate(${dx}px, ${dy}px)`;
+            card.style.transition = "none";
+            requestAnimationFrame(() => {
+              card.style.transition = "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)";
+              card.style.transform = "none";
+            });
+          }
+        }
+      });
+    }
   }
 
-  searchInput?.addEventListener("input", render);
+  searchInput?.addEventListener("input", () => render(false));
   chips.forEach((chip) => {
     chip.addEventListener("click", () => {
       chips.forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
       activeCategory = chip.getAttribute("data-cat");
-      render();
+      render(true);
     });
   });
 
   wireWishlistButtons(grid);
   wireDetailsModal(document);
-  render();
+  render(false);
 }
 
 async function initHomeFeatured() {
