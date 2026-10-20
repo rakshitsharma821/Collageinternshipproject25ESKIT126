@@ -1,0 +1,173 @@
+[
+  {
+    "id": "p1",
+    "name": "iPhone 16 Pro Max",
+    "brand": "Apple",
+    "category": "phone",
+    "image_url": "https://m.media-amazon.com/images/I/51Vs7ZwpSpL._AC_SX679_.jpg",
+    "review": "The most refined iPhone camera system yet, paired with the smoothest display Apple has shipped. Battery finally matches the ambition.",
+    "rating": 9.5
+  },
+  {
+    "id": "p2",
+    "name": "iPhone 16",
+    "brand": "Apple",
+    "category": "phone",
+    "image_url": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-model-unselect-gallery-2-202409_GEO_IN?wid=5120&hei=2880&fmt=webp&qlt=90&.v=ZnlzVUZzRWd3dlg0RllqbHhQSUpKTGdzSmpObkZCM3MrNmJ5SkhESlNDaElTd0FWL0RrZVVSWUpsbHBzZEZDTjhLcXQxZ1h0QThIT2dnUm5qbGk5OUJkSERIUjY1Wk1Od3FtNjF6NFZLVXRUKzcvYzFXSU9zYjhqZ2pRRHlaK1BVd0cxVytZV0ZVQnV6YjdNc0g2T2t3&traceId=1",
+    "review": "Almost all the Pro's smarts in a lighter body — the sensible pick unless you shoot a lot of zoom.",
+    "rating": 8.9
+  },
+  {
+    "id": "p3",
+    "name": "iPhone 15",
+    "brand": "Apple",
+    "category": "phone",
+    "image_url": "https://m.media-amazon.com/images/I/51PtFHUPjBL._AC_SY300_SX300_QL70_FMwebp_.jpg",
+    "review": "Still a superbly built phone a year later, though the Dynamic Island is starting to feel like the base tier's only flex.",
+    "rating": 8.4
+  },
+  {
+    "id": "l1",
+    "name": "MacBook Pro 16\" M4",
+    "brand": "Apple",
+    "category": "laptop",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/mbp16-2024.png",
+    "review": "Silent under sustained loads that make other laptops throttle, with a battery that shrugs off a full workday.",
+    "rating": 9.5
+  },
+  {
+    "id": "l2",
+    "name": "MacBook Air 15\" M3",
+    "brand": "Apple",
+    "category": "laptop",
+    "image_url": "https://rukminim2.flixcart.com/image/1528/1528/xif0q/computer/g/t/w/-enriched-transparent-original-imagypv6zpfu8kzh.png?q=90",
+    "review": "Fanless, featherlight, and fast enough for almost everyone — still the laptop we recommend most.",
+    "rating": 9.2
+  },
+  {
+    "id": "l3",
+    "name": "Asus ROG Zephyrus G14",
+    "brand": "Asus",
+    "category": "laptop",
+    "image_url": "https://in.store.asus.com/media/catalog/product/1/_/1._ga403wr-qs123ws__main.jpg?quality=80&bg-color=255,255,255&fit=bounds&height=596&width=596&canvas=596:596",
+    "review": "Genuine gaming power in a 14-inch chassis that doesn't scream 'gaming laptop.' Fan noise ramps up fast under load.",
+    "rating": 9.0
+  },
+  {
+    "id": "l4",
+    "name": "Asus Zenbook 14 OLED",
+    "brand": "Asus",
+    "category": "laptop",
+    "image_url": "https://dlcdnwebimgs.asus.com/files/media/202510/e456c335-0898-468a-8271-2482e62add0b/v1/features/images/large/2x/kv/kv.webp",
+    "review": "A gorgeous OLED panel and all-day battery life for well under flagship pricing. Speakers are the weak point.",
+    "rating": 8.6
+  },
+  {
+    "id": "l5",
+    "name": "Acer Predator Helios 16",
+    "brand": "Acer",
+    "category": "laptop",
+    "image_url": "https://m.media-amazon.com/images/I/61ziSzsGEbL._SL1000_.jpg",
+    "review": "Serious frame rates at a price that undercuts the competition, if you can live with the bulk and the fan whine.",
+    "rating": 8.8
+  },
+  {
+    "id": "l6",
+    "name": "Acer Swift Go 14",
+    "brand": "Acer",
+    "category": "laptop",
+    "image_url": "https://m.media-amazon.com/images/I/71vFMKafmKL._AC_SX466_.jpg",
+    "review": "The budget productivity laptop we keep recommending to students — solid keyboard, middling webcam.",
+    "rating": 8.2
+  },
+  {
+    "id": "w1",
+    "name": "Apple Watch Series 10",
+    "brand": "Apple",
+    "category": "watch",
+    "image_url": "https://www.apple.com/newsroom/images/2024/09/introducing-apple-watch-series-10/article/Apple-Watch-Series-10-hero-240909_big.jpg.large_2x.jpg",
+    "review": "Thinner case, brighter always-on display, and the health tracking suite that still leads the category.",
+    "rating": 9.1
+  },
+  {
+    "id": "w2",
+    "name": "Apple Watch Ultra 2",
+    "brand": "Apple",
+    "category": "watch",
+    "image_url": "https://m.media-amazon.com/images/I/81V3wgQBeuL._SX679_.jpg",
+    "review": "Built for multi-day expeditions, priced like it — titanium case, huge battery, dive-rated toughness.",
+    "rating": 9.3
+  },
+  {
+    "id": "w3",
+    "name": "Samsung Galaxy Watch 7",
+    "brand": "Samsung",
+    "category": "watch",
+    "image_url": "https://m.media-amazon.com/images/I/713LEDx+H0L._SY450_.jpg",
+    "review": "The strongest Wear OS option for Android owners, with sleep coaching that's genuinely useful.",
+    "rating": 8.6
+  },
+  {
+    "id": "e1",
+    "name": "AirPods Pro 3",
+    "brand": "Apple",
+    "category": "earbuds",
+    "image_url": "https://rukminim2.flixcart.com/image/1528/1528/xif0q/headphone/3/b/c/-original-imahftffyzcx5ksy.jpeg?q=90",
+    "review": "Noise cancellation that finally rivals over-ear rivals, plus a fit that stays comfortable for hours.",
+    "rating": 9.3
+  },
+  {
+    "id": "e2",
+    "name": "AirPods Max",
+    "brand": "Apple",
+    "category": "earbuds",
+    "image_url": "https://rukminim2.flixcart.com/image/1528/1528/xif0q/headphone/7/p/n/-original-imah4jvfftfwhs5q.jpeg?q=90",
+    "review": "Reference-quality sound and build in a headphone that's heavier — and pricier — than it needs to be.",
+    "rating": 8.8
+  },
+  {
+    "id": "e3",
+    "name": "AirPods 4",
+    "brand": "Apple",
+    "category": "earbuds",
+    "image_url": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/airpods-4-hero-select-202409?wid=976&hei=916&fmt=jpeg&qlt=90&.v=NFNYUnZEZG9WdmVKZzdXRW9IVzNoQVV5N29UUE5sYkU5bzFjbnV4MlZFL2kyVU55U21PWTMyajVGNTlWWnhwak14MXJScFRZN3Y5OWZsRXVrN1k4cFZyQ2FPOWYvcVVkNFcyRXFtUGhFUW8",
+    "review": "The everyday earbud for iPhone owners who don't need ANC. Case is smaller, fit is better than ever.",
+    "rating": 8.3
+  },
+  {
+    "id": "t1",
+    "name": "Apple TV 4K (3rd Gen)",
+    "brand": "Apple",
+    "category": "tv",
+    "image_url": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/apple-tv-4k-hero-select-202210?wid=1076&hei=1070&fmt=jpeg&qlt=90&.v=a3VoZW85YUhreXN3ZFlSUDc3a0tqdU1qeWRTYWRhVU5NM3d6SkhmNzkxTVA2eHYwV0FuTVcxeXpzZU1sNHk2WmJGcXNRQnFCV0w3WVRjTExvdm1ic2FNaUdBMSt0VkxKZ2NWelk1alBpUVVXZEdHNUFPR0hYUU12cjI0VlFzM1A",
+    "review": "The slickest streaming box interface around, though the price still stings next to a $30 dongle.",
+    "rating": 8.9
+  },
+  {
+    "id": "t2",
+    "name": "Samsung Neo QLED QN90D",
+    "brand": "Samsung",
+    "category": "tv",
+    "image_url": "https://rukminim2.flixcart.com/image/1528/1528/xif0q/television/m/v/5/-original-imahknwwnvwb7gtb.jpeg?q=90",
+    "review": "Mini-LED brightness that makes HDR genuinely pop, with the best anti-glare coating we've tested.",
+    "rating": 9.0
+  },
+  {
+    "id": "t3",
+    "name": "LG OLED C4",
+    "brand": "LG",
+    "category": "tv",
+    "image_url": "https://m.media-amazon.com/images/I/81QAq0+lmxL._AC_SY300_SX300_QL70_FMwebp_.jpg",
+    "review": "Perfect blacks, near-instant response time, and the gaming features enthusiasts actually want. Risk of burn-in remains.",
+    "rating": 9.3
+  },
+  {
+    "id": "t4",
+    "name": "Sony Bravia XR A80L",
+    "brand": "Sony",
+    "category": "tv",
+    "image_url": "https://d1ncau8tqf99kp.cloudfront.net/converted/111878_original_local_1200x1050_v3_converted.webp",
+    "review": "Sony's color science and motion processing are still unmatched — the remote and smart-TV software are not.",
+    "rating": 8.8
+  }
+]

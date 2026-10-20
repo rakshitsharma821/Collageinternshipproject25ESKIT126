@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "GadgetVerse Price Finder",
+  "version": "1.0.0",
+  "description": "Find the cheapest price across major electronics stores with a tactile 3D tag desk.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "GadgetVerse Price Finder"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}

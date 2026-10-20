@@ -1,0 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/gadgets"
+  to = "/.netlify/functions/gadgets"
+  status = 200
+
+[[redirects]]
+  from = "/api/compare"
+  to = "/.netlify/functions/compare"
+  status = 200

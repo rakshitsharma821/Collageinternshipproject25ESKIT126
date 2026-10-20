@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/responsive.css">
 <link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/auth.css">
 </head>
 <body>
 
@@ -140,14 +141,14 @@
 
 <section class="section container">
   <div class="section-head center reveal">
-    <span class="eyebrow" style="justify-content:center">What readers say</span>
-    <h2>Top Reviews from real buyers</h2>
+    <span class="eyebrow" style="justify-content:center">Verified Store Data</span>
+    <h2>Real Store Offers in Real Time</h2>
   </div>
   <div class="review-grid reveal-stagger reveal" style="grid-template-columns:1fr;max-width:460px;margin:0 auto">
     <div class="review-card glass">
       <div class="review-stars">★★★★★</div>
-      <p class="review-quote">"Bought the AirPods Pro 3 purely off this site's review — the ANC comparison chart alone was worth it."</p>
-      <div class="review-person"><div class="avatar">RS</div><div><div class="name">Rakshit Sharma</div><div class="role">Verified Buyer</div></div></div>
+      <p class="review-quote">We monitor price movements across Amazon, Flipkart, and Croma so you find genuine discounts without manual searching.</p>
+      <div class="review-person"><div class="avatar">GV</div><div><div class="name">GadgetVerse Test Lab</div><div class="role">Live Price Tracking</div></div></div>
     </div>
   </div>
 </section>
@@ -157,7 +158,7 @@
     <div style="text-align:center">
       <div class="counter-num mono" data-count="4.8" data-suffix="/5">0</div>
       <div class="review-stars" style="justify-content:center;margin:12px 0">★★★★★</div>
-      <p>Based on 18,402 verified reader ratings</p>
+      <p>Calculated from multi-store price checks and lab tests</p>
     </div>
     <div>
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
@@ -268,8 +269,14 @@
 
 <button class="back-to-top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m18 15-6-6-6 6"/></svg></button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/main.js"></script>
+<script src="lib/stores.js"></script>
+<script src="lib/match.js"></script>
+<script src="lib/cache.js"></script>
 <script src="js/search.js"></script>
 <script src="js/slider.js"></script>
 </body>

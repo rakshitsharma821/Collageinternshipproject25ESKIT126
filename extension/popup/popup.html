@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GadgetVerse Price Finder</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-viewport" id="popupViewport">
+    <!-- Header with 3D Cube Logo & Motion Switch -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="cube-scene" id="cubeScene" aria-label="GadgetVerse 3D logo" role="button" tabindex="0">
+          <div class="cube-mesh" id="cubeMesh">
+            <div class="cube-face cube-front">GV</div>
+            <div class="cube-face cube-back">GV</div>
+            <div class="cube-face cube-right">₹</div>
+            <div class="cube-face cube-left">₹</div>
+            <div class="cube-face cube-top"></div>
+            <div class="cube-face cube-bottom"></div>
+          </div>
+        </div>
+        <div class="header-title-wrap">
+          <h1 class="header-title">GadgetVerse</h1>
+          <span class="header-badge">Price Finder</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <label class="motion-toggle-label" title="Reduce motion">
+          <input type="checkbox" id="reduceMotionToggle" class="motion-toggle-input">
+          <span class="motion-toggle-pill" aria-label="Toggle reduced motion">
+            <svg class="icon-motion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            <span class="motion-label-text">Reduce motion</span>
+          </span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Search Tool Bar -->
+    <form class="search-form" id="searchForm" autocomplete="off">
+      <div class="search-input-shell">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"/>
+        </svg>
+        <input type="text" class="search-input" id="query" placeholder="Enter product name (e.g. iPhone 16)..." required>
+      </div>
+      <button type="submit" class="search-btn" id="go" aria-label="Find prices">
+        <span class="btn-face">
+          <span>Find prices</span>
+        </span>
+        <span class="btn-side"></span>
+      </button>
+    </form>
+
+    <!-- Context & Status Banner -->
+    <div class="status-bar">
+      <div class="current-tag" id="current">Showing top electronics retailers</div>
+      <div class="status-meta">
+        <span class="state" id="state">Ready</span>
+        <span class="summary" id="summary">3 stores ready</span>
+      </div>
+    </div>
+
+    <!-- 3D Desk of Physical Price Tags -->
+    <main class="desk-container" id="deskContainer">
+      <div class="cards-stack" id="results">
+        <!-- Result cards rendered dynamically by popup.js -->
+      </div>
+    </main>
+
+    <!-- Footer Meta -->
+    <footer class="app-footer">
+      <span class="footer-note">Independent price comparison</span>
+      <span class="footer-version">v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="../lib/stores.js"></script>
+  <script src="../lib/match.js"></script>
+  <script src="fx.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

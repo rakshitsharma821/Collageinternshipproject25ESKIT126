@@ -1,3 +1,4 @@
+// GadgetVerse Live Catalog, Price Comparison, and Search Engine
 
 const TILE_ICONS = {
   phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="6" y1="18" x2="18" y2="18"/><circle cx="12" cy="20" r=".6" fill="currentColor" stroke="none"/></svg>`,
@@ -15,160 +16,323 @@ const CATEGORY_LABELS = {
   tv: "TVs"
 };
 
-
-const GADGETS = [
-  { id:"p1", name:"iPhone 16 Pro Max", brand:"Apple", category:"phone", price:1199, rating:9.5, review:"The most refined iPhone camera system yet, paired with the smoothest display Apple has shipped. Battery finally matches the ambition." },
-  { id:"p2", name:"iPhone 16", brand:"Apple", category:"phone", price:799, rating:8.9, review:"Almost all the Pro's smarts in a lighter body — the sensible pick unless you shoot a lot of zoom." },
-  { id:"p3", name:"iPhone 15", brand:"Apple", category:"phone", price:699, rating:8.4, review:"Still a superbly built phone a year later, though the Dynamic Island is starting to feel like the base tier's only flex." },
-  { id:"l1", name:"MacBook Pro 16\" M4", brand:"Apple", category:"laptop", price:2499, rating:9.5, review:"Silent under sustained loads that make other laptops throttle, with a battery that shrugs off a full workday." },
-  { id:"l2", name:"MacBook Air 15\" M3", brand:"Apple", category:"laptop", price:1299, rating:9.2, review:"Fanless, featherlight, and fast enough for almost everyone — still the laptop we recommend most." },
-  { id:"l3", name:"Asus ROG Zephyrus G14", brand:"Asus", category:"laptop", price:1799, rating:9.0, review:"Genuine gaming power in a 14-inch chassis that doesn't scream 'gaming laptop.' Fan noise ramps up fast under load." },
-  { id:"l4", name:"Asus Zenbook 14 OLED", brand:"Asus", category:"laptop", price:1099, rating:8.6, review:"A gorgeous OLED panel and all-day battery life for well under flagship pricing. Speakers are the weak point." },
-  { id:"l5", name:"Acer Predator Helios 16", brand:"Acer", category:"laptop", price:1699, rating:8.8, review:"Serious frame rates at a price that undercuts the competition, if you can live with the bulk and the fan whine." },
-  { id:"l6", name:"Acer Swift Go 14", brand:"Acer", category:"laptop", price:899, rating:8.2, review:"The budget productivity laptop we keep recommending to students — solid keyboard, middling webcam." },
-  { id:"w1", name:"Apple Watch Series 10", brand:"Apple", category:"watch", price:429, rating:9.1, review:"Thinner case, brighter always-on display, and the health tracking suite that still leads the category." },
-  { id:"w2", name:"Apple Watch Ultra 2", brand:"Apple", category:"watch", price:799, rating:9.3, review:"Built for multi-day expeditions, priced like it — titanium case, huge battery, dive-rated toughness." },
-  { id:"w3", name:"Samsung Galaxy Watch 7", brand:"Samsung", category:"watch", price:329, rating:8.6, review:"The strongest Wear OS option for Android owners, with sleep coaching that's genuinely useful." },
-  { id:"e1", name:"AirPods Pro 3", brand:"Apple", category:"earbuds", price:249, rating:9.3, review:"Noise cancellation that finally rivals over-ear rivals, plus a fit that stays comfortable for hours." },
-  { id:"e2", name:"AirPods Max", brand:"Apple", category:"earbuds", price:549, rating:8.8, review:"Reference-quality sound and build in a headphone that's heavier — and pricier — than it needs to be." },
-  { id:"e3", name:"AirPods 4", brand:"Apple", category:"earbuds", price:129, rating:8.3, review:"The everyday earbud for iPhone owners who don't need ANC. Case is smaller, fit is better than ever." },
-  { id:"t1", name:"Apple TV 4K (3rd Gen)", brand:"Apple", category:"tv", price:149, rating:8.9, review:"The slickest streaming box interface around, though the price still stings next to a $30 dongle." },
-  { id:"t2", name:"Samsung Neo QLED QN90D", brand:"Samsung", category:"tv", price:1799, rating:9.0, review:"Mini-LED brightness that makes HDR genuinely pop, with the best anti-glare coating we've tested." },
-  { id:"t3", name:"LG OLED C4", brand:"LG", category:"tv", price:1499, rating:9.3, review:"Perfect blacks, near-instant response time, and the gaming features enthusiasts actually want. Risk of burn-in remains." },
-  { id:"t4", name:"Sony Bravia XR A80L", brand:"Sony", category:"tv", price:1399, rating:8.8, review:"Sony's color science and motion processing are still unmatched — the remote and smart-TV software are not." },
-];
-
-
-window.GADGETS = GADGETS;
 window.TILE_ICONS = TILE_ICONS;
 window.CATEGORY_LABELS = CATEGORY_LABELS;
 
+// Global catalog storage (populated dynamically)
+window.GADGETS = [];
+
 let __ringUid = 0;
-function buildRing(score /* 0-10 */, size = 52){
-  const pct = Math.max(0, Math.min(10, score)) / 10;
-  const circumference = 175; 
+function buildRing(score, size = 52) {
+  const num = typeof score === "number" && !isNaN(score) ? score : 8.5;
+  const pct = Math.max(0, Math.min(10, num)) / 10;
+  const circumference = 175;
   const offset = circumference - pct * circumference;
   const gradId = `ringGrad${++__ringUid}`;
   return `
-    <div class="ring-badge" style="width:${size}px;height:${size}px" data-score="${score}">
+    <div class="ring-badge" style="width:${size}px;height:${size}px" data-score="${num}">
       <svg viewBox="0 0 64 64">
         <defs>
           <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#6c5ce7"/>
-            <stop offset="100%" stop-color="#00d9ff"/>
+            <stop offset="0%" stop-color="#0f766e"/>
+            <stop offset="100%" stop-color="#15803d"/>
           </linearGradient>
         </defs>
         <circle class="ring-track" cx="32" cy="32" r="27.9"></circle>
         <circle class="ring-fill" cx="32" cy="32" r="27.9" style="stroke:url(#${gradId})" data-offset="${offset}"></circle>
       </svg>
-      <div class="ring-label"><b>${score.toFixed(1)}</b><span>SCORE</span></div>
+      <div class="ring-label"><b>${num.toFixed(1)}</b><span>SCORE</span></div>
     </div>`;
 }
 
-
-function animateRings(scope = document){
-  scope.querySelectorAll(".ring-fill").forEach(circle => {
+function animateRings(scope = document) {
+  scope.querySelectorAll(".ring-fill").forEach((circle) => {
     const offset = circle.getAttribute("data-offset");
-    requestAnimationFrame(() => { circle.style.strokeDashoffset = offset; });
+    requestAnimationFrame(() => {
+      circle.style.strokeDashoffset = offset;
+    });
   });
 }
 
-
-const CATEGORY_KEYWORDS = {
-  phone: "iphone,smartphone",
-  laptop: "laptop,macbook",
-  watch: "smartwatch,applewatch",
-  earbuds: "earbuds,airpods",
-  tv: "television,tv"
-};
-
-
-function hashSeed(str){
-  let hash = 0;
-  for(let i = 0; i < str.length; i++){
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash) || 1;
-}
-
-
-const REAL_PHOTOS = {
-  p1: "https://m.media-amazon.com/images/I/51Vs7ZwpSpL._AC_SX679_.jpg",
-  p2: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-model-unselect-gallery-2-202409_GEO_IN?wid=5120&hei=2880&fmt=webp&qlt=90&.v=ZnlzVUZzRWd3dlg0RllqbHhQSUpKTGdzSmpObkZCM3MrNmJ5SkhESlNDaElTd0FWL0RrZVVSWUpsbHBzZEZDTjhLcXQxZ1h0QThIT2dnUm5qbGk5OUJkSERIUjY1Wk1Od3FtNjF6NFZLVXRUKzcvYzFXSU9zYjhqZ2pRRHlaK1BVd0cxVytZV0ZVQnV6YjdNc0g2T2t3&traceId=1",
-  p3: "https://m.media-amazon.com/images/I/51PtFHUPjBL._AC_SY300_SX300_QL70_FMwebp_.jpg",
-  l1: "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/mbp16-2024.png",
-  l2: "https://rukminim2.flixcart.com/image/1528/1528/xif0q/computer/g/t/w/-enriched-transparent-original-imagypv6zpfu8kzh.png?q=90",
-  l3: "https://in.store.asus.com/media/catalog/product/1/_/1._ga403wr-qs123ws__main.jpg?quality=80&bg-color=255,255,255&fit=bounds&height=596&width=596&canvas=596:596",
-  l4: "https://dlcdnwebimgs.asus.com/files/media/202510/e456c335-0898-468a-8271-2482e62add0b/v1/features/images/large/2x/kv/kv.webp",
-  l5: "https://m.media-amazon.com/images/I/61ziSzsGEbL._SL1000_.jpg",
-  l6: "https://m.media-amazon.com/images/I/71vFMKafmKL._AC_SX466_.jpg",
-  w1: "https://www.apple.com/newsroom/images/2024/09/introducing-apple-watch-series-10/article/Apple-Watch-Series-10-hero-240909_big.jpg.large_2x.jpg",
-  w2: "https://m.media-amazon.com/images/I/81V3wgQBeuL._SX679_.jpg",
-  w3: "https://m.media-amazon.com/images/I/713LEDx+H0L._SY450_.jpg",
-  e1: "https://rukminim2.flixcart.com/image/1528/1528/xif0q/headphone/3/b/c/-original-imahftffyzcx5ksy.jpeg?q=90",
-  e2: "https://rukminim2.flixcart.com/image/1528/1528/xif0q/headphone/7/p/n/-original-imah4jvfftfwhs5q.jpeg?q=90",
-  e3: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/airpods-4-hero-select-202409?wid=976&hei=916&fmt=jpeg&qlt=90&.v=NFNYUnZEZG9WdmVKZzdXRW9IVzNoQVV5N29UUE5sYkU5bzFjbnV4MlZFL2kyVU55U21PWTMyajVGNTlWWnhwak14MXJScFRZN3Y5OWZsRXVrN1k4cFZyQ2FPOWYvcVVkNFcyRXFtUGhFUW8",
-  t1: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/apple-tv-4k-hero-select-202210?wid=1076&hei=1070&fmt=jpeg&qlt=90&.v=a3VoZW85YUhreXN3ZFlSUDc3a0tqdU1qeWRTYWRhVU5NM3d6SkhmNzkxTVA2eHYwV0FuTVcxeXpzZU1sNHk2WmJGcXNRQnFCV0w3WVRjTExvdm1ic2FNaUdBMSt0VkxKZ2NWelk1alBpUVVXZEdHNUFPR0hYUU12cjI0VlFzM1A",
-  t2: "https://rukminim2.flixcart.com/image/1528/1528/xif0q/television/m/v/5/-original-imahknwwnvwb7gtb.jpeg?q=90",
-  t3: "https://m.media-amazon.com/images/I/81QAq0+lmxL._AC_SY300_SX300_QL70_FMwebp_.jpg",
-  t4: "https://d1ncau8tqf99kp.cloudfront.net/converted/111878_original_local_1200x1050_v3_converted.webp"
-};
-
-function photoURL(seed, category, w = 700, h = 525){
-  if(REAL_PHOTOS[seed]) return REAL_PHOTOS[seed];
-  const keywords = CATEGORY_KEYWORDS[category] || category || "technology";
-  return `https://loremflickr.com/${w}/${h}/${keywords}?lock=${hashSeed(String(seed))}`;
+function photoURL(seed, category, w = 700, h = 525) {
+  const item = (window.GADGETS || []).find((g) => g.id === seed);
+  if (item && item.image_url) return item.image_url;
+  return `https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=${w}&auto=format&fit=crop&q=80`;
 }
 window.photoURL = photoURL;
 
-/* ---------- Product card template ---------- */
-function productCardHTML(g){
+// Concurrency limiter for background store price requests
+class QueueLimiter {
+  constructor(limit = 2) {
+    this.limit = limit;
+    this.active = 0;
+    this.queue = [];
+  }
+  async add(fn) {
+    if (this.active >= this.limit) {
+      await new Promise((resolve) => this.queue.push(resolve));
+    }
+    this.active++;
+    try {
+      return await fn();
+    } finally {
+      this.active--;
+      if (this.queue.length > 0) {
+        const next = this.queue.shift();
+        next();
+      }
+    }
+  }
+}
+const priceLimiter = new QueueLimiter(2);
+
+// Fetch live catalog from Supabase or Netlify Function or local json
+let catalogPromise = null;
+async function fetchCatalog() {
+  if (Array.isArray(window.GADGETS) && window.GADGETS.length > 0) {
+    return window.GADGETS;
+  }
+  if (catalogPromise) return catalogPromise;
+
+  catalogPromise = (async () => {
+    // 1. Session storage cache (10 min TTL)
+    if (window.GadgetCache) {
+      const cached = window.GadgetCache.readStorageCache(sessionStorage, "gv:catalog");
+      if (Array.isArray(cached) && cached.length > 0) {
+        window.GADGETS = cached;
+        return cached;
+      }
+    }
+
+    // 2. Direct Supabase query if client available
+    if (window.supabaseClient) {
+      try {
+        const { data, error } = await window.supabaseClient.from("gadgets").select("*");
+        if (!error && Array.isArray(data) && data.length > 0) {
+          window.GADGETS = data;
+          if (window.GadgetCache) {
+            window.GadgetCache.writeStorageCache(sessionStorage, "gv:catalog", data);
+          }
+          return data;
+        }
+      } catch (err) {
+        console.warn("Direct Supabase query failed, falling back to API:", err);
+      }
+    }
+
+    // 3. /api/gadgets endpoint
+    try {
+      const res = await fetch("/api/gadgets");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          window.GADGETS = json.data;
+          if (window.GadgetCache) {
+            window.GadgetCache.writeStorageCache(sessionStorage, "gv:catalog", json.data);
+          }
+          return json.data;
+        }
+      }
+    } catch (err) {
+      console.warn("API /api/gadgets unreachable, trying static fallback:", err);
+    }
+
+    // 4. Static fallback to data/gadgets.json
+    try {
+      const res = await fetch("data/gadgets.json");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          window.GADGETS = data;
+          if (window.GadgetCache) {
+            window.GadgetCache.writeStorageCache(sessionStorage, "gv:catalog", data);
+          }
+          return data;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load catalog data:", err);
+    }
+
+    return window.GADGETS || [];
+  })();
+
+  return catalogPromise;
+}
+
+// Fetch price comparison for a given gadget
+const priceMap = new Map();
+async function fetchPricesForGadget(gadget) {
+  if (priceMap.has(gadget.id)) return priceMap.get(gadget.id);
+
+  const cacheKey = `gv:price:${gadget.id}`;
+  if (window.GadgetCache) {
+    const cached = window.GadgetCache.readStorageCache(sessionStorage, cacheKey);
+    if (cached) {
+      priceMap.set(gadget.id, cached);
+      return cached;
+    }
+  }
+
+  const promise = priceLimiter.add(async () => {
+    try {
+      const res = await fetch(`/api/compare?q=${encodeURIComponent(gadget.name)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          if (window.GadgetCache) {
+            window.GadgetCache.writeStorageCache(sessionStorage, cacheKey, json);
+          }
+          priceMap.set(gadget.id, json);
+          return json;
+        }
+      }
+    } catch {
+      // Fallback below
+    }
+
+    // Default store search links if API is offline
+    const fallback = {
+      query: gadget.name,
+      cheapest: null,
+      offers: [
+        {
+          store: "amazon",
+          name: "Amazon",
+          mark: "A",
+          color: "#ff9900",
+          url: `https://www.amazon.in/s?k=${encodeURIComponent(gadget.name)}`
+        },
+        {
+          store: "flipkart",
+          name: "Flipkart",
+          mark: "F",
+          color: "#2874f0",
+          url: `https://www.flipkart.com/search?q=${encodeURIComponent(gadget.name)}`
+        },
+        {
+          store: "croma",
+          name: "Croma",
+          mark: "C",
+          color: "#00b5b5",
+          url: `https://www.croma.com/searchB?q=${encodeURIComponent(gadget.name)}`
+        }
+      ]
+    };
+    priceMap.set(gadget.id, fallback);
+    return fallback;
+  });
+
+  return promise;
+}
+
+function productCardHTML(g) {
   const isWished = typeof WishlistStore !== "undefined" && WishlistStore.has(g.id);
+  const imgUrl = g.image_url || photoURL(g.id, g.category);
+
   return `
-  <article class="product-card glass reveal" data-id="${g.id}" data-category="${g.category}">
-    <div class="card-media grad-${g.category}">
-      <img class="media-photo" src="${photoURL(g.id, g.category)}" alt="${g.name}" loading="lazy">
-      <button class="wish-btn ${isWished ? "active" : ""}" data-wish="${g.id}" aria-label="Toggle wishlist">
-        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.35-9.5-8.5C0.7 8 2 4.5 5.5 4.5c2 0 3.5 1.2 4.5 2.7C11 5.7 12.5 4.5 14.5 4.5 18 4.5 19.3 8 19.5 11.5 17 15.65 12 20 12 20Z"/></svg>
-      </button>
-      ${buildRing(g.rating, 52)}
-    </div>
-    <div class="card-body">
-      <span class="card-brand">${g.brand}</span>
-      <h3>${g.name}</h3>
-      <p class="card-review">${g.review}</p>
-      <div class="card-foot">
-        <div class="card-price mono">$${g.price}<br><small>${CATEGORY_LABELS[g.category]}</small></div>
+  <article class="product-card card-3d glass reveal" data-id="${g.id}" data-category="${g.category}">
+    <div class="card-inner-3d">
+      <div class="card-media grad-${g.category}">
+        <img class="media-photo" src="${imgUrl}" alt="${g.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=700&auto=format&fit=crop&q=80'">
+        <button class="wish-btn ${isWished ? "active" : ""}" data-wish="${g.id}" aria-label="Toggle wishlist">
+          <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.35-9.5-8.5C0.7 8 2 4.5 5.5 4.5c2 0 3.5 1.2 4.5 2.7C11 5.7 12.5 4.5 14.5 4.5 18 4.5 19.3 8 19.5 11.5 17 15.65 12 20 12 20Z"/></svg>
+        </button>
+        ${buildRing(g.rating || 8.5, 52)}
       </div>
-      <div class="card-actions">
-        <button class="btn btn-ghost btn-sm btn-block" data-details="${g.id}">View Details</button>
-        <button class="btn btn-primary btn-sm btn-block" data-wish="${g.id}">${isWished ? "Wishlisted" : "Add to Wishlist"}</button>
+      <div class="card-body">
+        <div class="card-header-meta">
+          <span class="card-brand">${g.brand}</span>
+          <span class="card-category-tag">${CATEGORY_LABELS[g.category] || g.category}</span>
+        </div>
+        <h3 class="card-title">${g.name}</h3>
+        <p class="card-review">${g.review || ""}</p>
+        
+        <div class="card-price-slot" data-price-slot="${g.id}">
+          <div class="price-skeleton">Checking store prices...</div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm btn-block" data-details="${g.id}">Compare Prices</button>
+          <button class="btn btn-primary btn-sm btn-block" data-wish="${g.id}">${isWished ? "Wishlisted" : "Add to Wishlist"}</button>
+        </div>
       </div>
     </div>
   </article>`;
 }
 
-function wireWishlistButtons(scope = document){
-  scope.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-wish]");
-    if(!btn) return;
-    const id = btn.getAttribute("data-wish");
-    WishlistStore.toggle(id);
-    refreshWishlistBadges();
-    // sync every button referencing this product (icon + label variant)
-    document.querySelectorAll(`[data-wish="${id}"]`).forEach(b => {
-      const active = WishlistStore.has(id);
-      b.classList.toggle("active", active);
-      if(b.classList.contains("btn")) b.textContent = active ? "Wishlisted" : "Add to Wishlist";
+function updateCardPriceUI(cardEl, priceData) {
+  const slot = cardEl.querySelector(".card-price-slot");
+  if (!slot) return;
+
+  if (priceData && priceData.cheapest && priceData.cheapest.price) {
+    const formatted = window.GadgetMatch ? window.GadgetMatch.formatPriceINR(priceData.cheapest.price) : `₹${priceData.cheapest.price.toLocaleString("en-IN")}`;
+    slot.innerHTML = `
+      <div class="price-row">
+        <span class="price-val mono">${formatted}</span>
+        <span class="cheapest-badge" style="background:${priceData.cheapest.color || "#15803d"}">Cheapest on ${priceData.cheapest.name}</span>
+      </div>
+      <div class="store-links-mini">
+        ${(priceData.offers || []).map((o) => `
+          <a href="${o.url}" target="_blank" rel="noopener noreferrer" class="store-chip-mini" title="${o.name}: ${o.price ? (window.GadgetMatch ? window.GadgetMatch.formatPriceINR(o.price) : '₹' + o.price) : (o.error || 'Check price')}">
+            <span class="store-mark" style="background:${o.color || '#5a5d66'}">${o.mark || o.name[0]}</span>
+            <span class="store-price-text">${o.price ? (window.GadgetMatch ? window.GadgetMatch.formatPriceINR(o.price) : '₹' + o.price) : 'Compare'}</span>
+          </a>
+        `).join("")}
+      </div>
+    `;
+  } else {
+    // Show store search buttons
+    slot.innerHTML = `
+      <div class="price-row">
+        <span class="price-fallback-label">Compare live prices:</span>
+      </div>
+      <div class="store-links-mini">
+        ${(priceData.offers || []).map((o) => `
+          <a href="${o.url}" target="_blank" rel="noopener noreferrer" class="store-chip-mini" title="Search on ${o.name}">
+            <span class="store-mark" style="background:${o.color || '#5a5d66'}">${o.mark || o.name[0]}</span>
+            <span class="store-name-text">${o.name}</span>
+          </a>
+        `).join("")}
+      </div>
+    `;
+  }
+}
+
+function populateCardPrices(container) {
+  container.querySelectorAll("[data-price-slot]").forEach((slot) => {
+    const id = slot.getAttribute("data-price-slot");
+    const gadget = (window.GADGETS || []).find((g) => g.id === id);
+    if (!gadget) return;
+
+    fetchPricesForGadget(gadget).then((data) => {
+      const card = slot.closest(".product-card");
+      if (card) updateCardPriceUI(card, data);
     });
-    showToast(WishlistStore.has(id) ? "Added to wishlist" : "Removed from wishlist");
   });
 }
 
-function showToast(msg){
+function wireWishlistButtons(scope = document) {
+  scope.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-wish]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-wish");
+    if (typeof WishlistStore !== "undefined") {
+      WishlistStore.toggle(id);
+      if (typeof refreshWishlistBadges === "function") refreshWishlistBadges();
+      document.querySelectorAll(`[data-wish="${id}"]`).forEach((b) => {
+        const active = WishlistStore.has(id);
+        b.classList.toggle("active", active);
+        if (b.classList.contains("btn")) b.textContent = active ? "Wishlisted" : "Add to Wishlist";
+      });
+      showToast(WishlistStore.has(id) ? "Added to wishlist" : "Removed from wishlist");
+    }
+  });
+}
+
+function showToast(msg) {
   let toast = document.querySelector(".toast");
-  if(!toast){
+  if (!toast) {
     toast = document.createElement("div");
     toast.className = "toast";
     toast.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span></span>`;
@@ -180,64 +344,138 @@ function showToast(msg){
   window.__toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
 }
 
-function wireDetailsModal(scope = document){
+function wireDetailsModal(scope = document) {
   const modal = document.getElementById("detailsModal");
-  if(!modal) return;
-  scope.addEventListener("click", (e) => {
+  if (!modal) return;
+
+  scope.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-details]");
-    if(!btn) return;
-    const g = GADGETS.find(x => x.id === btn.getAttribute("data-details"));
-    if(!g) return;
-    RecentStore.add(g.id);
-    modal.querySelector(".modal-icon").innerHTML = `<img class="media-photo" src="${photoURL(g.id, g.category, 800, 500)}" alt="${g.name}">`;
-    modal.querySelector(".modal-icon").className = `modal-icon grad-${g.category}`;
-    modal.querySelector(".modal-name").textContent = g.name;
-    modal.querySelector(".modal-brand").textContent = `${g.brand} · ${CATEGORY_LABELS[g.category]}`;
-    modal.querySelector(".modal-review").textContent = g.review;
-    modal.querySelector(".modal-price").textContent = `$${g.price}`;
-    modal.querySelector(".modal-ring").innerHTML = buildRing(g.rating, 74);
-    modal.querySelector("[data-wish]").setAttribute("data-wish", g.id);
-    modal.querySelector("[data-wish]").textContent = WishlistStore.has(g.id) ? "Wishlisted" : "Add to Wishlist";
+    if (!btn) return;
+    const id = btn.getAttribute("data-details");
+    const g = (window.GADGETS || []).find((x) => x.id === id);
+    if (!g) return;
+
+    if (typeof RecentStore !== "undefined") RecentStore.add(g.id);
+
+    const iconEl = modal.querySelector(".modal-icon");
+    if (iconEl) {
+      iconEl.innerHTML = `<img class="media-photo" src="${g.image_url || photoURL(g.id, g.category, 800, 500)}" alt="${g.name}">`;
+      iconEl.className = `modal-icon grad-${g.category}`;
+    }
+
+    const nameEl = modal.querySelector(".modal-name");
+    if (nameEl) nameEl.textContent = g.name;
+
+    const brandEl = modal.querySelector(".modal-brand");
+    if (brandEl) brandEl.textContent = `${g.brand} · ${CATEGORY_LABELS[g.category] || g.category}`;
+
+    const reviewEl = modal.querySelector(".modal-review");
+    if (reviewEl) reviewEl.textContent = g.review || "";
+
+    const ringEl = modal.querySelector(".modal-ring");
+    if (ringEl) ringEl.innerHTML = buildRing(g.rating || 8.5, 74);
+
+    const wishBtn = modal.querySelector("[data-wish]");
+    if (wishBtn) {
+      wishBtn.setAttribute("data-wish", g.id);
+      wishBtn.textContent = typeof WishlistStore !== "undefined" && WishlistStore.has(g.id) ? "Wishlisted" : "Add to Wishlist";
+    }
+
+    const priceContainer = modal.querySelector(".modal-price");
+    if (priceContainer) {
+      priceContainer.innerHTML = `<div class="loading-offers">Fetching store prices...</div>`;
+    }
+
     modal.classList.add("open");
     animateRings(modal);
+
+    // Fetch live prices and populate comparison table
+    const priceData = await fetchPricesForGadget(g);
+    if (priceContainer && modal.classList.contains("open")) {
+      let offersHTML = "";
+      if (priceData && priceData.offers && priceData.offers.length > 0) {
+        offersHTML = `
+          <div class="comparison-table-wrap">
+            <h4 class="comparison-heading">Live Store Price Comparison</h4>
+            <div class="comparison-offers-list">
+              ${priceData.offers.map((offer) => {
+                const isBest = offer.best;
+                const formattedPrice = offer.price ? (window.GadgetMatch ? window.GadgetMatch.formatPriceINR(offer.price) : `₹${offer.price.toLocaleString("en-IN")}`) : (offer.error || "Check live price");
+                return `
+                  <div class="comparison-row ${isBest ? 'best-offer' : ''}">
+                    <div class="offer-store">
+                      <span class="offer-badge" style="background:${offer.color || '#5a5d66'}">${offer.mark || offer.name[0]}</span>
+                      <strong>${offer.name}</strong>
+                    </div>
+                    <div class="offer-price-col">
+                      <span class="offer-price mono">${formattedPrice}</span>
+                      ${offer.youSave > 0 ? `<span class="offer-savings">Save ${window.GadgetMatch ? window.GadgetMatch.formatPriceINR(offer.youSave) : '₹' + offer.youSave}</span>` : ''}
+                      ${isBest ? `<span class="cheapest-pill">Lowest Price</span>` : ''}
+                    </div>
+                    <div class="offer-action">
+                      <a href="${offer.url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm ${isBest ? 'btn-primary' : 'btn-ghost'}">
+                        Visit ${offer.name}
+                      </a>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+            ${priceData.fetchedAt ? `<div class="observed-timestamp">Observed: ${new Date(priceData.fetchedAt).toLocaleTimeString()}</div>` : ''}
+          </div>
+        `;
+      } else {
+        offersHTML = `<div class="no-offers">Store price data currently unavailable.</div>`;
+      }
+      priceContainer.innerHTML = offersHTML;
+    }
   });
+
   modal.querySelector(".lightbox-close")?.addEventListener("click", () => modal.classList.remove("open"));
-  modal.addEventListener("click", (e) => { if(e.target === modal) modal.classList.remove("open"); });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.remove("open");
+  });
 }
 
-function initProductsPage(){
+async function initProductsPage() {
   const grid = document.getElementById("productGrid");
-  if(!grid) return;
+  if (!grid) return;
+
+  grid.innerHTML = `<div class="loading-state" style="grid-column:1/-1;text-align:center;padding:48px 0">Loading products...</div>`;
+
+  await fetchCatalog();
 
   const searchInput = document.getElementById("productSearch");
   const chips = document.querySelectorAll(".filter-chip");
   const resultsMeta = document.getElementById("resultsMeta");
   let activeCategory = "all";
 
-  // ----- Read ?cat= and ?search= from the URL (set by category cards / navbar search) -----
   const params = new URLSearchParams(location.search);
   const urlCat = params.get("cat");
   const urlSearch = params.get("search");
-  if(urlSearch && searchInput) searchInput.value = urlSearch;
-  if(urlCat && CATEGORY_LABELS[urlCat]){
+  if (urlSearch && searchInput) searchInput.value = urlSearch;
+  if (urlCat && (CATEGORY_LABELS[urlCat] || urlCat === "all")) {
     activeCategory = urlCat;
-    chips.forEach(c => c.classList.toggle("active", c.getAttribute("data-cat") === urlCat));
+    chips.forEach((c) => c.classList.toggle("active", c.getAttribute("data-cat") === urlCat));
   }
 
-  function render(){
+  function render() {
     const term = (searchInput?.value || "").trim().toLowerCase();
-    const filtered = GADGETS.filter(g => {
+    const filtered = (window.GADGETS || []).filter((g) => {
       const matchesCat = activeCategory === "all" || g.category === activeCategory;
-      const matchesTerm = !term ||
+      const matchesTerm =
+        !term ||
         g.name.toLowerCase().includes(term) ||
         g.brand.toLowerCase().includes(term) ||
-        CATEGORY_LABELS[g.category].toLowerCase().includes(term);
+        (CATEGORY_LABELS[g.category] || "").toLowerCase().includes(term);
       return matchesCat && matchesTerm;
     });
 
-    resultsMeta.textContent = `${filtered.length} gadget${filtered.length !== 1 ? "s" : ""} found`;
+    if (resultsMeta) {
+      resultsMeta.textContent = `${filtered.length} gadget${filtered.length !== 1 ? "s" : ""} found`;
+    }
 
-    if(filtered.length === 0){
+    if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column:1/-1">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
@@ -248,13 +486,15 @@ function initProductsPage(){
 
     grid.innerHTML = filtered.map(productCardHTML).join("");
     animateRings(grid);
-    revealNow(grid);
+    if (typeof revealNow === "function") revealNow(grid);
+    populateCardPrices(grid);
+    if (typeof initTiltEffects === "function") initTiltEffects(grid);
   }
 
   searchInput?.addEventListener("input", render);
-  chips.forEach(chip => {
+  chips.forEach((chip) => {
     chip.addEventListener("click", () => {
-      chips.forEach(c => c.classList.remove("active"));
+      chips.forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
       activeCategory = chip.getAttribute("data-cat");
       render();
@@ -266,34 +506,32 @@ function initProductsPage(){
   render();
 }
 
-function initHomeFeatured(){
+async function initHomeFeatured() {
   const featuredEl = document.getElementById("featuredGrid");
-  const trendingEl = document.getElementById("trendingGrid");
-  if(featuredEl){
-    const featured = [...GADGETS].sort((a,b) => b.rating - a.rating).slice(0, 4);
-    featuredEl.innerHTML = featured.map(productCardHTML).join("");
-    animateRings(featuredEl);
-    revealNow(featuredEl);
-    wireWishlistButtons(featuredEl);
-    wireDetailsModal(document);
-  }
-  if(trendingEl){
-    const trending = [...GADGETS].sort(() => 0.5 - Math.random()).slice(0, 6);
-    const chips = trending.map(g => `
-      <div class="ticker-chip">${g.name} <span style="color:var(--grad-2)">·</span> $${g.price}</div>
-    `).join("");
+  if (!featuredEl) return;
 
-    trendingEl.innerHTML = chips + chips;
-  }
+  featuredEl.innerHTML = `<div class="loading-state" style="grid-column:1/-1;text-align:center;padding:32px 0">Loading featured gadgets...</div>`;
+
+  await fetchCatalog();
+
+  const featured = [...(window.GADGETS || [])].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+  featuredEl.innerHTML = featured.map(productCardHTML).join("");
+  animateRings(featuredEl);
+  if (typeof revealNow === "function") revealNow(featuredEl);
+  populateCardPrices(featuredEl);
+  wireWishlistButtons(featuredEl);
+  wireDetailsModal(document);
+  if (typeof initTiltEffects === "function") initTiltEffects(featuredEl);
 }
 
-function initLiveStats(){
+async function initLiveStats() {
+  await fetchCatalog();
   const countEl = document.getElementById("statGadgetCount");
-  if(countEl) countEl.textContent = GADGETS.length;
+  if (countEl) countEl.textContent = (window.GADGETS || []).length;
 
   const avgEl = document.getElementById("statAvgScore");
-  if(avgEl){
-    const avg = GADGETS.reduce((sum, g) => sum + g.rating, 0) / GADGETS.length;
+  if (avgEl && window.GADGETS.length > 0) {
+    const avg = window.GADGETS.reduce((sum, g) => sum + (g.rating || 8.5), 0) / window.GADGETS.length;
     avgEl.textContent = avg.toFixed(1);
   }
 }
