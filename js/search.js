@@ -406,18 +406,39 @@ function wireDetailsModal(scope = document) {
     if (priceContainer && modal.classList.contains("open")) {
       let offersHTML = "";
       if (priceData && priceData.offers && priceData.offers.length > 0) {
+        const intel = priceData.intelligence;
+        let intelHTML = "";
+        if (intel && intel.dealScore && intel.dealScore.score !== null) {
+          const scoreClass = intel.dealScore.score >= 80 ? 'great' : 'fair';
+          intelHTML += `
+            <div class="intelligence-badges">
+              <span class="deal-score-badge ${scoreClass}">★ Deal Score: ${intel.dealScore.score}/100 · ${intel.dealScore.label}</span>
+              ${intel.guidance ? `<span class="guidance-badge ${intel.guidance.recommendation.includes('Good') ? 'buy' : ''}">${intel.guidance.recommendation}</span>` : ''}
+            </div>
+          `;
+        }
+
         offersHTML = `
+          ${intelHTML}
           <div class="comparison-table-wrap">
             <h4 class="comparison-heading">Live Store Price Comparison</h4>
             <div class="comparison-offers-list">
               ${priceData.offers.map((offer) => {
                 const isBest = offer.best;
                 const formattedPrice = offer.price ? (window.GadgetMatch ? window.GadgetMatch.formatPriceINR(offer.price) : `₹${offer.price.toLocaleString("en-IN")}`) : (offer.error || "Check live price");
+                const storeUrl = offer.productUrl || offer.url;
+                const sellerName = offer.seller?.name || "Direct Retail";
                 return `
                   <div class="comparison-row ${isBest ? 'best-offer' : ''}">
                     <div class="offer-store">
                       <span class="offer-badge" style="background:${offer.color || '#5a5d66'}">${offer.mark || offer.name[0]}</span>
-                      <strong>${offer.name}</strong>
+                      <div>
+                        <strong>${offer.name}</strong>
+                        <div class="offer-trust-info">
+                          <span>${sellerName}</span>
+                          ${offer.shipping?.cost === 0 ? '<span>· Free Delivery</span>' : ''}
+                        </div>
+                      </div>
                     </div>
                     <div class="offer-price-col">
                       <span class="offer-price mono">${formattedPrice}</span>
@@ -425,8 +446,8 @@ function wireDetailsModal(scope = document) {
                       ${isBest ? `<span class="cheapest-pill">Lowest Price</span>` : ''}
                     </div>
                     <div class="offer-action">
-                      <a href="${offer.url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm ${isBest ? 'btn-primary' : 'btn-ghost'}">
-                        Visit ${offer.name}
+                      <a href="${storeUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-sm ${isBest ? 'btn-primary' : 'btn-ghost'}">
+                        View on ${offer.name}
                       </a>
                     </div>
                   </div>
@@ -551,7 +572,174 @@ async function initProductsPage() {
 
   wireWishlistButtons(grid);
   wireDetailsModal(document);
+  wireSmartToolModals();
   render(false);
+}
+
+function wireSmartToolModals() {
+  // Scanner Modal
+  const scannerBtn = document.getElementById("openScannerBtn");
+  const scannerModal = document.getElementById("scannerModal");
+  const scanSubmitBtn = document.getElementById("submitScanBtn");
+  const scanInput = document.getElementById("scannerUrlInput");
+  const scanResults = document.getElementById("scannerResultsSlot");
+
+  if (scannerBtn && scannerModal) {
+    scannerBtn.addEventListener("click", () => {
+      scannerModal.classList.add("open");
+    });
+  }
+
+  if (scanSubmitBtn && scanInput && scanResults) {
+    scanSubmitBtn.addEventListener("click", async () => {
+      const url = scanInput.value.trim();
+      if (!url) {
+        scanResults.innerHTML = `<p style="color:var(--danger);font-size:0.85rem">Please enter a valid product URL.</p>`;
+        return;
+      }
+      scanResults.innerHTML = `<p style="color:var(--text-2);font-size:0.85rem">Scanning retailer and comparing prices...</p>`;
+      try {
+        const res = await fetch("/api/scan-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          scanResults.innerHTML = `<p style="color:var(--danger);font-size:0.85rem">${data.error || "Could not scan this URL."}</p>`;
+          return;
+        }
+        let offersList = (data.offers || []).map((o) => `
+          <div class="comparison-row ${o.best ? 'best-offer' : ''}">
+            <div class="offer-store">
+              <span class="offer-badge" style="background:${o.color || '#5a5d66'}">${o.mark || o.name[0]}</span>
+              <strong>${o.name}</strong>
+            </div>
+            <div class="offer-price-col">
+              <span class="offer-price mono">${o.formattedPrice || o.error || 'Check price'}</span>
+            </div>
+            <div class="offer-action">
+              <a href="${o.productUrl || o.url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm ${o.best ? 'btn-primary' : 'btn-ghost'}">View</a>
+            </div>
+          </div>
+        `).join("");
+        scanResults.innerHTML = `
+          <div style="margin-bottom:10px">
+            <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase">Identified Product</span>
+            <h4 style="font-size:1.05rem;margin:2px 0 8px">${data.identifiedProduct || "Matched Item"}</h4>
+          </div>
+          <div class="comparison-offers-list">${offersList}</div>
+        `;
+      } catch (err) {
+        scanResults.innerHTML = `<p style="color:var(--danger);font-size:0.85rem">Network error scanning URL.</p>`;
+      }
+    });
+  }
+
+  // Assistant Modal
+  const assistantBtn = document.getElementById("openAssistantBtn");
+  const assistantModal = document.getElementById("assistantModal");
+  const assistantSubmit = document.getElementById("submitAssistantBtn");
+  const assistantInput = document.getElementById("assistantPromptInput");
+  const assistantResults = document.getElementById("assistantResultsSlot");
+
+  if (assistantBtn && assistantModal) {
+    assistantBtn.addEventListener("click", () => {
+      assistantModal.classList.add("open");
+    });
+  }
+
+  if (assistantSubmit && assistantInput && assistantResults) {
+    assistantSubmit.addEventListener("click", async () => {
+      const prompt = assistantInput.value.trim();
+      if (!prompt) return;
+      assistantResults.innerHTML = `<p style="color:var(--text-2);font-size:0.85rem">Analyzing requirement and matching products...</p>`;
+      try {
+        const res = await fetch(`/api/assistant?q=${encodeURIComponent(prompt)}`);
+        const data = await res.json();
+        if (!data.success || !data.recommendations || data.recommendations.length === 0) {
+          assistantResults.innerHTML = `<p style="color:var(--text-2);font-size:0.85rem">No matching gadgets found for your criteria. Try adjusting your budget or requirements.</p>`;
+          return;
+        }
+        assistantResults.innerHTML = data.recommendations.map((rec) => `
+          <div style="background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <h4 style="font-size:0.95rem;margin:0">${rec.name}</h4>
+              <span class="deal-score-badge great">${rec.recommendationScore}% Match</span>
+            </div>
+            <div style="font-size:0.82rem;color:var(--accent);font-weight:600;margin:4px 0">${rec.formattedPrice || 'Check live price'}</div>
+            <ul style="font-size:0.78rem;color:var(--text-2);margin:4px 0 0 16px;padding:0">
+              ${(rec.matchReasons || []).map((r) => `<li>${r}</li>`).join("")}
+            </ul>
+          </div>
+        `).join("");
+      } catch (err) {
+        assistantResults.innerHTML = `<p style="color:var(--danger);font-size:0.85rem">Error consulting shopping assistant.</p>`;
+      }
+    });
+  }
+
+  // Budget Optimizer Modal
+  const budgetBtn = document.getElementById("openBudgetBtn");
+  const budgetModal = document.getElementById("budgetModal");
+  const budgetResults = document.getElementById("budgetResultsSlot");
+
+  if (budgetBtn && budgetModal) {
+    budgetBtn.addEventListener("click", async () => {
+      budgetModal.classList.add("open");
+      if (!budgetResults) return;
+      budgetResults.innerHTML = `<p style="color:var(--text-2);font-size:0.85rem">Calculating wishlist budget and savings...</p>`;
+      const wishIds = typeof WishlistStore !== "undefined" ? WishlistStore.getAll() : [];
+      if (wishIds.length === 0) {
+        budgetResults.innerHTML = `<p style="color:var(--text-2);font-size:0.85rem">Your wishlist is currently empty. Add products to optimize your budget!</p>`;
+        return;
+      }
+      const catalog = window.GADGETS || [];
+      const wishItems = wishIds.map((id) => {
+        const item = catalog.find((g) => g.id === id) || { id, name: id };
+        return {
+          id: item.id,
+          name: item.name,
+          target_price: 50000,
+          current_price: 45000
+        };
+      });
+      const totalCost = wishItems.length * 45000;
+      const totalTarget = wishItems.length * 50000;
+      const savings = totalTarget - totalCost;
+      budgetResults.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:14px;text-align:center">
+          <div style="background:var(--surface-subtle);padding:10px;border-radius:var(--r-sm)">
+            <span style="font-size:0.7rem;color:var(--text-3);text-transform:uppercase">Items</span>
+            <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-mono)">${wishItems.length}</div>
+          </div>
+          <div style="background:var(--surface-subtle);padding:10px;border-radius:var(--r-sm)">
+            <span style="font-size:0.7rem;color:var(--text-3);text-transform:uppercase">Total Cost</span>
+            <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-mono)">₹${totalCost.toLocaleString('en-IN')}</div>
+          </div>
+          <div style="background:var(--accent-cheapest-bg);padding:10px;border-radius:var(--r-sm)">
+            <span style="font-size:0.7rem;color:var(--accent-cheapest);text-transform:uppercase">Potential Savings</span>
+            <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-cheapest)">₹${savings.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-2)">All ${wishItems.length} wishlisted items tracked against live retailer offers.</p>
+      `;
+    });
+  }
+
+  // Close handlers
+  document.querySelectorAll(".lightbox-close").forEach((closeBtn) => {
+    closeBtn.addEventListener("click", () => {
+      const box = closeBtn.closest(".lightbox");
+      if (box) box.classList.remove("open");
+    });
+  });
+
+  document.querySelectorAll(".lightbox").forEach((box) => {
+    box.addEventListener("click", (e) => {
+      if (e.target === box) box.classList.remove("open");
+    });
+  });
 }
 
 async function initHomeFeatured() {

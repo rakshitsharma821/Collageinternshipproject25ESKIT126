@@ -69,6 +69,20 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
       <input type="text" id="productSearch" placeholder="Search by name, brand, or feature..." autocomplete="off">
     </label>
+    <div class="tool-btn-group">
+      <button class="tool-btn" id="openScannerBtn" aria-label="Scan Store Link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Scan Link
+      </button>
+      <button class="tool-btn" id="openAssistantBtn" aria-label="Ask AI Assistant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+        AI Shopper
+      </button>
+      <button class="tool-btn" id="openBudgetBtn" aria-label="Budget Optimizer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+        Budget Optimizer
+      </button>
+    </div>
   </div>
 
   <p class="results-meta" id="resultsMeta">Loading catalog...</p>
@@ -92,6 +106,59 @@
     <div style="margin-top:16px">
       <button class="btn btn-primary btn-sm btn-block" data-wish="">Add to Wishlist</button>
     </div>
+  </div>
+</div>
+
+<!-- Scanner Modal -->
+<div class="lightbox" id="scannerModal">
+  <div class="modal-inner">
+    <button class="lightbox-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="modal-top">
+      <div>
+        <div class="modal-brand">Store Scanner</div>
+        <h3 class="modal-name">Scan Product Link</h3>
+      </div>
+    </div>
+    <p class="modal-review">Paste an Amazon India, Flipkart, or Croma product URL to find matching prices across competing stores.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input type="url" id="scannerUrlInput" placeholder="https://www.amazon.in/dp/..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:0.9rem">
+      <button class="btn btn-primary btn-sm" id="submitScanBtn">Scan</button>
+    </div>
+    <div id="scannerResultsSlot" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- AI Shopping Assistant Modal -->
+<div class="lightbox" id="assistantModal">
+  <div class="modal-inner">
+    <button class="lightbox-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="modal-top">
+      <div>
+        <div class="modal-brand">Smart Guidance</div>
+        <h3 class="modal-name">Ask AI Shopper</h3>
+      </div>
+    </div>
+    <p class="modal-review">Describe your needs (e.g., "phone under ₹25,000 for college with great battery life and camera").</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input type="text" id="assistantPromptInput" placeholder="e.g. laptop under 60k for programming..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:0.9rem">
+      <button class="btn btn-primary btn-sm" id="submitAssistantBtn">Search</button>
+    </div>
+    <div id="assistantResultsSlot" style="margin-top:12px;max-height:360px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- Budget Optimizer Modal -->
+<div class="lightbox" id="budgetModal">
+  <div class="modal-inner">
+    <button class="lightbox-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="modal-top">
+      <div>
+        <div class="modal-brand">Wishlist Intelligence</div>
+        <h3 class="modal-name">Smart Budget Optimizer</h3>
+      </div>
+    </div>
+    <p class="modal-review">Track your total wishlist cost, potential multi-store savings, and target-price alerts.</p>
+    <div id="budgetResultsSlot" style="margin-top:12px"></div>
   </div>
 </div>
 

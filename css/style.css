@@ -631,6 +631,39 @@ p { color: var(--text-2); }
 
 .observed-timestamp { font-size: 0.7rem; color: var(--text-3); font-family: var(--font-mono); margin-top: 10px; text-align: right; }
 
+/* ---------- Shopping Intelligence & Deal Badges ---------- */
+.intelligence-badges {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px;
+}
+.deal-score-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+  border-radius: var(--r-full); font-size: 0.75rem; font-weight: 600;
+  font-family: var(--font-mono); background: var(--accent-light); color: var(--accent);
+}
+.deal-score-badge.great { background: var(--accent-cheapest-bg); color: var(--accent-cheapest); }
+.deal-score-badge.fair { background: var(--surface-subtle); color: var(--text-2); }
+.guidance-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+  border-radius: var(--r-full); font-size: 0.75rem; font-weight: 500;
+  background: var(--surface-subtle); color: var(--text-2); border: 1px solid var(--border-soft);
+}
+.guidance-badge.buy { background: var(--accent-cheapest-bg); color: var(--accent-cheapest); font-weight: 600; }
+.guidance-badge.wait { background: rgba(180, 83, 9, 0.08); color: var(--warn); }
+.offer-trust-info {
+  font-size: 0.75rem; color: var(--text-3); margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap;
+}
+.tool-btn-group {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.tool-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border-radius: var(--r-sm); font-size: 0.8rem; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-1);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.tool-btn:hover { background: var(--surface-subtle); border-color: var(--accent); }
+.tool-btn svg { width: 14px; height: 14px; }
+
 .lightbox-close {
   position: absolute; top: 16px; right: 16px;
   width: 32px; height: 32px; border-radius: var(--r-sm);

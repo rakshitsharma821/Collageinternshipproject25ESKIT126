@@ -11,3 +11,18 @@
   from = "/api/compare"
   to = "/.netlify/functions/compare"
   status = 200
+
+[[redirects]]
+  from = "/api/price-history"
+  to = "/.netlify/functions/price-history"
+  status = 200
+
+[[redirects]]
+  from = "/api/scan-url"
+  to = "/.netlify/functions/scan-url"
+  status = 200
+
+[[redirects]]
+  from = "/api/assistant"
+  to = "/.netlify/functions/assistant"
+  status = 200

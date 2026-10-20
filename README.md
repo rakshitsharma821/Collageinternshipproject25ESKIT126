@@ -24,6 +24,12 @@ GadgetVerse is a product-comparison platform featuring live store price intellig
    - `public.tracked_products` with target price validations.
    - `public.gadgets` catalog table with public read policy and service-role write policy.
 
+### Historical Price Tracking Table (`public.price_observations`)
+To enable persistent price tracking over time:
+1. Open the [Supabase Dashboard SQL Editor](https://supabase.com/dashboard).
+2. Execute [`supabase/migrations/20261020_price_observations.sql`](file:///D:/collage%20project/Collageinternshipproject25ESKIT126/supabase/migrations/20261020_price_observations.sql).
+3. This creates `public.price_observations` with RLS (public read, service-role write) and compound indexes for fast timeline retrieval.
+
 ### Removing the 19 Seeded Products (Transition to Search-First Comparison)
 To remove the initial 19 demo seed rows (`p1..p3`, `l1..l6`, `w1..w3`, `e1..e3`, `t1..t4`) safely without dropping the schema, tables, or user-tracked products:
 
@@ -94,33 +100,58 @@ Searches stores directly for the user's query using modular store adapters (`Sto
   - `400 Bad Request`: Missing, too short (< 2 chars), or too long (> 100 chars) query.
   - `405 Method Not Allowed`: Non-GET HTTP method.
 
-### Variant-Aware Matching Rules
-- Storage tiers (e.g., `128GB` vs `256GB`) are distinguished and not cross-matched.
-- Model tiers (e.g., base `iPhone 16` vs `Pro` vs `Pro Max`) are validated.
-- Low-cost accessories (cases, screen protectors, cables) are strictly rejected from being chosen as the cheapest offer.
+### `GET /api/price-history`
+Retrieves historical price observations recorded for a product.
+- **Query Parameters**:
+  - `productId` *(required)*: Product identifier (1–100 chars).
+  - `days` *(optional)*: Timeframe in days (1–365, default 30).
+  - `limit` *(optional)*: Observation count (1–100, default 50).
+- **Responses**:
+  - `200 OK`: `{ success: true, productId: "...", days: 30, history: [...], stats: { minPrice, maxPrice, avgPrice, latestPrice, count } }`
+  - When observations are insufficient, cleanly reports empty state without fabricating fake prices.
+
+### `POST /api/scan-url`
+Scans a pasted retailer URL (Amazon, Flipkart, Croma), extracts product identity, and compares prices.
+- **Security & SSRF Guard**:
+  - Strictly requires `https:`.
+  - Rejects private IPs, localhost, AWS metadata (`169.254.169.254`), non-standard ports, and URL credentials.
+  - Domain allowlist: `amazon.in`, `flipkart.com`, `croma.com`.
+- **Responses**:
+  - `200 OK`: `{ success: true, identifiedProduct: "...", originStore: "...", cheapest: {...}, offers: [...] }`
+  - `400 Bad Request`: SSRF violation or invalid URL.
+  - `422 Unprocessable Entity`: Unidentifiable product slug.
+
+### `POST /api/assistant` or `GET /api/assistant?q=...`
+AI Shopping Assistant that parses natural-language requirements (budget, category, priority features, preferred brands) and scores candidate products with pros, cons, and direct retailer links.
+- Uses server-side API key safety if `GEMINI_API_KEY` is present.
+- Built-in deterministic rule engine handles all queries hermetically when no external AI key is set.
 
 ---
 
-## 4. Store Adapters & Integration Status
+## 4. Shopping Intelligence Features
 
-All store queries operate through the `BaseStoreAdapter` interface ([`lib/adapters/base.js`](file:///D:/collage%20project/Collageinternshipproject25ESKIT126/lib/adapters/base.js)).
-
-1. **Amazon India (`AmazonAdapter`)**:
-   - Queries PA-API v5 when official credentials (`AMAZON_ACCESS_KEY`, etc.) are provided.
-   - Transparently falls back to resilient HTML parser with anti-bot challenge detection when credentials are not configured.
-2. **Flipkart (`FlipkartAdapter`)**:
-   - Queries Flipkart Affiliate API when `FLIPKART_AFFILIATE_ID` is present.
-   - Transparently falls back to listing price parser with direct search URL preservation.
-3. **Croma (`CromaAdapter`)**:
-   - Croma's storefront operates as a client-side Single Page Application (SPA).
-   - Reports that client-side JS rendering or official enterprise partner API (`CROMA_API_KEY`) is required, preserving direct search links without fabricating prices.
+1. **AI Deal Score (0–100)**:
+   - Transparent, deterministic evaluation based on:
+     - Proximity to recorded historical low (up to 40 pts)
+     - Competitor market spread (up to 25 pts)
+     - Data freshness (up to 10 pts)
+     - Variant match confidence (up to 10 pts)
+   - Labeled as `Great Deal` ($\ge 80$), `Fair Price` (60–79), `Average` (40–59), or `Insufficient data`.
+2. **Buy Now or Wait Guidance**:
+   - Analyzes verified price trends over time. Only offers advice when $\ge 2$ observations exist; includes explicit data limitations and never promises future discounts.
+3. **Offer Reality Checker**:
+   - Detects inflated MRP discount claims by verifying against true historical average selling prices.
+4. **Seller, Warranty & Trust Normalizer**:
+   - Normalizes seller names, ratings, warranty terms, and return policies. Marks unverified details as `"Not verified"` instead of fabricating terms.
+5. **Smart Wishlist & Budget Optimizer**:
+   - Calculates total wishlist target budget, total current best price across stores, net potential savings, and deduplicated price drop alerts.
 
 ---
 
 ## 5. Local Testing & Verification
 
 ### Run Automated Unit & Mocked Integration Tests
-All 49 unit and integration tests run hermetically without external network dependencies:
+All 75 unit and integration tests run hermetically without external network dependencies:
 ```bash
 node --test tests/*.test.js
 ```
