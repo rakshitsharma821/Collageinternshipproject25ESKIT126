@@ -1,92 +1,181 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export const ALLOWED_CATEGORIES = new Set(["all", "phone", "laptop", "watch", "earbuds", "tv"]);
+export const MAX_QUERY_LENGTH = 80;
+export const DEFAULT_LIMIT = 50;
+export const MAX_LIMIT = 100;
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://dlpjtgbpfqkmtemxgxiq.supabase.co";
-const SUPABASE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  "sb_publishable_KaUdeDaTKpenG_aRyu_pPg_vHGUcBY5";
+const CORS_HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Cache-Control": "public, max-age=60, s-maxage=300"
+};
 
-function getLocalGadgets() {
-  try {
-    const dataPath = path.resolve(__dirname, "../../data/gadgets.json");
-    if (fs.existsSync(dataPath)) {
-      const raw = fs.readFileSync(dataPath, "utf-8");
-      return JSON.parse(raw);
-    }
-  } catch (err) {
-    console.error("Local gadgets read error:", err);
-  }
-  return [];
+/**
+ * Sanitizes search terms for PostgREST .or() filter expressions.
+ * Strips delimiters and characters that can disrupt filter syntax.
+ */
+export function sanitizeSearchQuery(rawQuery) {
+  if (!rawQuery || typeof rawQuery !== "string") return "";
+  return rawQuery
+    .replace(/[()\[\]{}"'\\`,;]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-export default async function handler(req) {
-  const url = new URL(req.url);
-  const category = (url.searchParams.get("category") || "").toLowerCase().trim();
-  const q = (url.searchParams.get("q") || "").toLowerCase().trim();
+/**
+ * Pure database query executor.
+ * Does NOT fall back to local JSON; surfaces real database status and records.
+ */
+export async function queryGadgets(supabaseClient, options = {}) {
+  const { category, q, limit = DEFAULT_LIMIT, offset = 0 } = options;
 
-  const headers = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Cache-Control": "public, max-age=60"
-  };
+  let queryBuilder = supabaseClient
+    .from("gadgets")
+    .select("id, name, brand, category, image_url, review, rating, created_at")
+    .order("rating", { ascending: false })
+    .range(offset, offset + limit - 1);
 
+  if (category && category !== "all") {
+    queryBuilder = queryBuilder.eq("category", category);
+  }
+
+  const cleanQ = sanitizeSearchQuery(q);
+  if (cleanQ) {
+    // PostgREST ilike pattern across name, brand, and review
+    queryBuilder = queryBuilder.or(
+      `name.ilike.%${cleanQ}%,brand.ilike.%${cleanQ}%,review.ilike.%${cleanQ}%`
+    );
+  }
+
+  const { data, error } = await queryBuilder;
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data) ? data : [];
+}
+
+/**
+ * Serverless Netlify Function handler for GET /api/gadgets
+ */
+export default async function handler(req, context) {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers });
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  let gadgets = [];
+  // Reject non-GET methods
+  if (req.method !== "GET") {
+    return new Response(
+      JSON.stringify({ success: false, error: `Method ${req.method} not allowed` }),
+      { status: 405, headers: { ...CORS_HEADERS, Allow: "GET, OPTIONS" } }
+    );
+  }
 
-  // 1. Try Supabase query
-  try {
-    if (SUPABASE_URL && SUPABASE_KEY) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-      let query = supabase.from("gadgets").select("*");
+  // 1. Parse and validate query parameters first
+  const url = new URL(req.url, "http://localhost");
+  const rawCategory = (url.searchParams.get("category") || "all").toLowerCase().trim();
+  const rawQ = (url.searchParams.get("q") || "").trim();
+  const rawLimit = url.searchParams.get("limit");
+  const rawOffset = url.searchParams.get("offset");
 
-      if (category && category !== "all") {
-        query = query.eq("category", category);
-      }
+  if (!ALLOWED_CATEGORIES.has(rawCategory)) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: `Invalid category filter '${rawCategory}'. Allowed categories: phone, laptop, watch, earbuds, tv, all.`
+      }),
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
 
-      if (q) {
-        query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%,review.ilike.%${q}%`);
-      }
+  if (rawQ.length > MAX_QUERY_LENGTH) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: `Search query exceeds maximum length of ${MAX_QUERY_LENGTH} characters.`
+      }),
+      { status: 400, headers: CORS_HEADERS }
+    );
+  }
 
-      const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
-        gadgets = data;
-      }
+  let limit = DEFAULT_LIMIT;
+  if (rawLimit !== null) {
+    const parsedLimit = parseInt(rawLimit, 10);
+    if (isNaN(parsedLimit) || parsedLimit < 1) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Parameter 'limit' must be a positive integer." }),
+        { status: 400, headers: CORS_HEADERS }
+      );
     }
-  } catch (err) {
-    console.warn("Supabase fetch failed, falling back to local dataset:", err.message);
+    limit = Math.min(parsedLimit, MAX_LIMIT);
   }
 
-  // 2. Fallback to local data/gadgets.json if Supabase returned no rows
-  if (!gadgets.length) {
-    const local = getLocalGadgets();
-    gadgets = local.filter((item) => {
-      const matchesCategory = !category || category === "all" || item.category.toLowerCase() === category;
-      const matchesQuery =
-        !q ||
-        item.name.toLowerCase().includes(q) ||
-        item.brand.toLowerCase().includes(q) ||
-        (item.review && item.review.toLowerCase().includes(q));
-      return matchesCategory && matchesQuery;
+  let offset = 0;
+  if (rawOffset !== null) {
+    const parsedOffset = parseInt(rawOffset, 10);
+    if (isNaN(parsedOffset) || parsedOffset < 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Parameter 'offset' must be a non-negative integer." }),
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
+    offset = parsedOffset;
+  }
+
+  // 2. Resolve and validate Supabase credentials
+  const supabaseUrl = process.env.SUPABASE_URL || "https://dlpjtgbpfqkmtemxgxiq.supabase.co";
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Database configuration is missing. Ensure SUPABASE_URL and SUPABASE_ANON_KEY are set."
+      }),
+      { status: 500, headers: CORS_HEADERS }
+    );
+  }
+
+  // 3. Query database (strictly no silent fallback)
+  try {
+    const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false }
     });
-  }
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      count: gadgets.length,
-      data: gadgets
-    }),
-    { status: 200, headers }
-  );
+    const items = await queryGadgets(supabaseClient, {
+      category: rawCategory,
+      q: rawQ,
+      limit,
+      offset
+    });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        count: items.length,
+        category: rawCategory === "all" ? null : rawCategory,
+        data: items
+      }),
+      { status: 200, headers: CORS_HEADERS }
+    );
+  } catch (err) {
+    // Log technical error details server-side only; avoid leaking table metadata or secrets to client
+    console.error("[api/gadgets] Database query error:", err.code || err.name, err.message);
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Failed to retrieve gadgets catalog from database."
+      }),
+      { status: 502, headers: CORS_HEADERS }
+    );
+  }
 }
