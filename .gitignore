@@ -3,23 +3,34 @@ Thumbs.db
 .DS_Store
 desktop.ini
 
-# IDE/Editor files
+# IDE & Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# Gitkeep files (keep the folder structure but don't track the .gitkeep files)
-.gitkeep
-
-# Temp / cache
-*.log
-*.tmp
-node_modules/
-dist/
 .history/
 
+# Build and Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+dist/
+build/
+.netlify/
 
-# Local Netlify folder
-.netlify
+# Logs & Temp
+*.log
+*.tmp
+audit_report.json
+
+# Environment variables & secrets (never commit)
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
+frontend/.env
+frontend/.env.local
+!.env.example
+!backend/.env.example

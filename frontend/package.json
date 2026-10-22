@@ -1,0 +1,11 @@
+{
+  "name": "gadgetverse-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo \"Frontend static assets ready for deployment\"",
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  }
+}

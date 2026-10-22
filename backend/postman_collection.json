@@ -1,0 +1,540 @@
+{
+  "info": {
+    "name": "GadgetVerse API — Postman Test Collection",
+    "_postman_id": "gadgetverse-api-collection",
+    "description": "Comprehensive test cases for the GadgetVerse Backend (Render/Local), including Health, Store Price Comparison, Catalog, Deal Radar Price History, SSRF Security, and Price Drop Alerts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Set to http://localhost:3000 for local testing or your Render URL (e.g. https://your-backend.onrender.com)"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health & Diagnostics",
+      "item": [
+        {
+          "name": "Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Service reports ok', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "  pm.expect(json.service).to.eql('gadgetverse-backend');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CORS Preflight (OPTIONS)",
+          "request": {
+            "method": "OPTIONS",
+            "header": [
+              { "key": "Origin", "value": "https://gadgetverse.vercel.app" },
+              { "key": "Access-Control-Request-Method", "value": "GET" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Preflight returns 204 No Content', function () { pm.response.to.have.status(204); });",
+                  "pm.test('CORS headers present', function () {",
+                  "  pm.expect(pm.response.headers.get('Access-Control-Allow-Origin')).to.not.be.null;",
+                  "  pm.expect(pm.response.headers.get('Access-Control-Allow-Methods')).to.include('GET');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nonexistent Endpoint (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/unknown-endpoint",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "unknown-endpoint"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Error message present', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Price Comparison (/api/compare)",
+      "item": [
+        {
+          "name": "Compare by Product Name (iPhone 16)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?q=iPhone 16",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [{ "key": "q", "value": "iPhone 16" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains offers and verdict', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "  pm.expect(json.offers).to.be.an('array');",
+                  "  pm.expect(json.verdict).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Compare by Supported Retailer URL (Amazon)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?url=https://www.amazon.in/dp/B0DGH7P83X",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [{ "key": "url", "value": "https://www.amazon.in/dp/B0DGH7P83X" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns structured comparison', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Unsupported Domain URL (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?url=https://unsupported-store.com/item",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [{ "key": "url", "value": "https://unsupported-store.com/item" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Rejection mentions supported retailers', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject SSRF Private IP Target (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?url=http://169.254.169.254/latest/meta-data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [{ "key": "url", "value": "http://169.254.169.254/latest/meta-data" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Blocks SSRF with 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Short Query < 2 chars (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare?q=a",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"],
+              "query": [{ "key": "q", "value": "a" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Non-GET Method (405)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/compare",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "compare"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 405 Method Not Allowed', function () { pm.response.to.have.status(405); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Price Drop Alerts (/api/track)",
+      "item": [
+        {
+          "name": "Submit Valid Price Target",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"apple-iphone-16\",\n  \"productName\": \"iPhone 16\",\n  \"targetPrice\": 72000,\n  \"email\": \"test.shopper@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/track",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "track"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK (or 503 if Supabase unconfigured)', function () {",
+                  "  pm.expect([200, 503]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Invalid Email Format (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"apple-iphone-16\",\n  \"productName\": \"iPhone 16\",\n  \"targetPrice\": 72000,\n  \"email\": \"invalid-email-address\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/track",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "track"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Error mentions email', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('valid email');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Non-Positive Price (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"apple-iphone-16\",\n  \"productName\": \"iPhone 16\",\n  \"targetPrice\": -100,\n  \"email\": \"test.shopper@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/track",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "track"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Price History (/api/price-history)",
+      "item": [
+        {
+          "name": "Get Price History for Valid Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/price-history?productId=apple-iphone-16",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "price-history"],
+              "query": [{ "key": "productId", "value": "apple-iphone-16" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('History response is valid', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.history).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Missing Product ID (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/price-history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "price-history"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Catalog Discovery (/api/gadgets)",
+      "item": [
+        {
+          "name": "Get Catalog Gadgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gadgets?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gadgets"],
+              "query": [{ "key": "limit", "value": "5" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Catalog by Category (phone)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gadgets?category=phone",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gadgets"],
+              "query": [{ "key": "category", "value": "phone" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Invalid Category (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gadgets?category=invalid-category",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gadgets"],
+              "query": [{ "key": "category", "value": "invalid-category" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Shopping Assistant (/api/assistant)",
+      "item": [
+        {
+          "name": "Extract Criteria from Prompt",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assistant?q=phone under 30000 with good battery",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assistant"],
+              "query": [{ "key": "q", "value": "phone under 30000 with good battery" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Criteria parsed accurately', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.parsedCriteria.budgetMax).to.eql(30000);",
+                  "  pm.expect(json.parsedCriteria.category).to.eql('phone');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Empty Assistant Query (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assistant?q=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assistant"],
+              "query": [{ "key": "q", "value": "" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

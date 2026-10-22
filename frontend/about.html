@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How GadgetVerse compares current gadget prices and records price history.">
+  <title>About &mdash; GadgetVerse</title>
+  <meta name="api-base" content="">
+  <!-- To connect directly to Render backend in production, set content="https://your-backend.onrender.com" or configure Vercel rewrites -->
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/tracker.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="GadgetVerse home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v16H6zM11 13h10M11 18h6"/></svg>
+        <span>GadgetVerse</span>
+      </a>
+      <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+        <a href="index.html#compare">Compare</a>
+        <a href="products.html">Products</a>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#deals">Deals</a>
+        <a href="about.html" aria-current="page">About</a>
+        <button class="nav-extra nav-motion" type="button" data-motion-toggle>Reduce motion</button>
+        <button class="nav-extra nav-sign-in" type="button" data-sign-in>Sign in</button>
+      </nav>
+      <div class="header-tools">
+        <form class="header-search" id="navSearchForm" role="search">
+          <label class="visually-hidden" for="navSearch">Search product names</label>
+          <input id="navSearch" name="q" type="search" placeholder="Search products" autocomplete="off">
+          <button aria-label="Search" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+          </button>
+        </form>
+        <button class="text-control" type="button" data-theme-toggle>Dark mode</button>
+        <button class="text-control motion-control" type="button" data-motion-toggle>Reduce motion</button>
+        <button class="sign-in" type="button" data-sign-in>Sign in</button>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="section-wrap catalog-hero">
+    <div class="section-intro">
+      <p class="eyebrow">About GadgetVerse</p>
+      <h1>Prices first. Evidence beside them.</h1>
+      <p>GadgetVerse checks supported store listings when you compare a product. Verified prices are shown with the store and the time they were observed; unavailable listings stay marked unavailable.</p>
+    </div>
+    <div class="steps">
+      <article class="step-card is-visible">
+        <span class="step-index">Comparison</span>
+        <h3>Current store checks</h3>
+        <p>Store adapters return only prices they can verify. Each result links directly to the retailer listing or search page.</p>
+      </article>
+      <article class="step-card is-visible">
+        <span class="step-index">History</span>
+        <h3>Recorded observations</h3>
+        <p>Price history is built from successful checks stored in Supabase. A buy-or-wait label is shown only when there is history across multiple days.</p>
+      </article>
+      <article class="step-card is-visible" id="catalog">
+        <span class="step-index">Catalog</span>
+        <h3>Editorial details</h3>
+        <p>Product names, brands, GadgetVerse reviews, and ratings come from the database catalog. Prices are not part of the catalog seed.</p>
+      </article>
+    </div>
+
+    <section class="trust-section section-wrap" id="trust">
+      <div class="trust-container">
+        <div class="trust-header">
+          <p class="eyebrow">Integrity &amp; data handling</p>
+          <h2>How we handle prices &amp; your data</h2>
+          <p>GadgetVerse is designed around consumer transparency: no invented discounts, no tracking bloat, and no fake urgency.</p>
+        </div>
+        <div class="trust-grid">
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <h4>No Fabricated Prices</h4>
+              <p>Every price is queried live or retrieved from logged observations. If a store is unconfigured or unavailable, we display it honestly.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h4>Target Price Privacy</h4>
+              <p>Alert emails are stored solely to deliver your requested price drop notification. Never sold or shared with advertiser networks.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
+            </div>
+            <div>
+              <h4>Direct Retailer Links</h4>
+              <p>Store links navigate directly to verified retailer search or product pages without misleading intermediate ad networks.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <div>
+              <h4>Verifiable Timestamps</h4>
+              <p>Every store offer displays the exact timestamp it was observed so you always know how fresh the data is.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-columns section-wrap">
+      <div class="footer-col footer-col-brand">
+        <a class="brand" href="index.html" aria-label="GadgetVerse home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v16H6zM11 13h10M11 18h6"/></svg>
+          <span>GadgetVerse</span>
+        </a>
+        <p class="brand-desc">
+          Independent shopping intelligence for electronics and gadgets in India. Compare verified store offers, track genuine price trends, and choose the right time to buy.
+        </p>
+        <div class="footer-badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>Search-first verified data</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Explore</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="index.html#compare">Price Comparison</a></li>
+          <li><a href="products.html">Product Catalog</a></li>
+          <li><a href="index.html#features">Deal Radar</a></li>
+          <li><a href="index.html#deals">Catalog Deals</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Supported Stores</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="https://www.amazon.in" target="_blank" rel="noopener noreferrer">Amazon India</a></li>
+          <li><a href="https://www.flipkart.com" target="_blank" rel="noopener noreferrer">Flipkart</a></li>
+          <li><a href="https://www.croma.com" target="_blank" rel="noopener noreferrer">Croma</a></li>
+          <li><a href="https://www.reliancedigital.in" target="_blank" rel="noopener noreferrer">Reliance Digital</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Trust &amp; Platform</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="about.html">About GadgetVerse</a></li>
+          <li><a href="contact.html">Contact &amp; Support</a></li>
+          <li><a href="index.html#trust">Data Integrity</a></li>
+          <li><a href="about.html">Editorial Catalog</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom section-wrap">
+      <p>&copy; 2026 GadgetVerse. Store trademarks, brand names, and logos belong to their respective retailers.</p>
+      <div class="footer-meta">
+        <span>Indian Rupee (INR &#8377;)</span>
+        <span>•</span>
+        <span>Zero sponsored rankings</span>
+      </div>
+    </div>
+  </footer>
+  <dialog id="signInDialog" class="sign-in-dialog">
+    <form method="dialog">
+      <button class="dialog-close" aria-label="Close">Close</button>
+      <p class="eyebrow">GadgetVerse account</p>
+      <h2>Sign in is not available</h2>
+      <p>Account sign-in is not configured for this site. You can still compare products and save a price alert.</p>
+    </form>
+  </dialog>
+</body>
+</html>

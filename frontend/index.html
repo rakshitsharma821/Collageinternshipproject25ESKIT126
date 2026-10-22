@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Compare current gadget prices across supported Indian stores, review price history, and set a target alert.">
+  <title>GadgetVerse &mdash; Compare gadget prices</title>
+  <meta name="api-base" content="">
+  <!-- To connect directly to Render backend in production, set content="https://your-backend.onrender.com" or configure Vercel rewrites -->
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/tracker.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="GadgetVerse home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v16H6zM11 13h10M11 18h6"/></svg>
+        <span>GadgetVerse</span>
+      </a>
+      <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+        <a href="#compare" aria-current="page">Compare</a>
+        <a href="products.html">Products</a>
+        <a href="#features">Features</a>
+        <a href="#deals">Deals</a>
+        <a href="about.html">About</a>
+        <button class="nav-extra nav-motion" type="button" data-motion-toggle>Reduce motion</button>
+        <button class="nav-extra nav-sign-in" type="button" data-sign-in>Sign in</button>
+      </nav>
+      <div class="header-tools">
+        <form class="header-search" id="navSearchForm" role="search">
+          <label class="visually-hidden" for="navSearch">Search product names</label>
+          <input id="navSearch" name="q" type="search" placeholder="Search products" autocomplete="off">
+          <button aria-label="Search" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+          </button>
+        </form>
+        <button class="text-control" type="button" data-theme-toggle>Dark mode</button>
+        <button class="text-control motion-control" type="button" data-motion-toggle>Reduce motion</button>
+        <button class="sign-in" type="button" data-sign-in>Sign in</button>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="compare">
+      <div class="hero-copy">
+        <p class="eyebrow">GadgetVerse price tracker</p>
+        <h1>Paste a product link or type a name</h1>
+        <p class="hero-promise">Compare current store prices, review verified price history, and choose when to buy.</p>
+        <form class="product-search" id="compareForm">
+          <label class="visually-hidden" for="productQuery">Product link or name</label>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
+          <input id="productQuery" name="query" type="text" placeholder="Paste link or type product name" autocomplete="off" required>
+          <button class="button button-primary" type="submit">Find best price</button>
+        </form>
+        <p class="search-hint">Only verified in-stock prices from authorized sources are shown.</p>
+        <p class="site-notice" id="siteNotice" role="status" aria-live="polite"></p>
+      </div>
+      <div class="hero-art" aria-label="3D price comparison preview">
+        <div class="hero-art-scene">
+          <div class="price-tag tag-back">
+            <div class="tag-meta">
+              <span>RETAILER</span>
+              <span class="tag-pill">Store</span>
+            </div>
+            <b>&#8377; &mdash;</b>
+            <div class="tag-footer">
+              <span class="tag-store">Reliance Digital</span>
+              <i></i>
+            </div>
+          </div>
+          <div class="price-tag tag-middle">
+            <div class="tag-meta">
+              <span>HISTORY</span>
+              <span class="tag-pill">Recorded</span>
+            </div>
+            <b>&#8377; &mdash;</b>
+            <div class="tag-footer">
+              <span class="tag-store">Flipkart · Croma</span>
+              <i></i>
+            </div>
+          </div>
+          <div class="price-tag tag-front">
+            <div class="tag-meta">
+              <span>COMPARE</span>
+              <span class="tag-pill tag-pill-teal">By price</span>
+            </div>
+            <b>&#8377; &mdash;</b>
+            <div class="tag-footer">
+              <span class="tag-store">Amazon India</span>
+              <i></i>
+            </div>
+          </div>
+          <div class="hero-art-subtle" aria-hidden="true">
+            <div class="subtle-badge"><span class="badge-signal"></span> Store comparison preview</div>
+            <div class="subtle-sparkline">
+              <svg viewBox="0 0 110 18" preserveAspectRatio="none"><path d="M0 14 Q 25 6, 50 11 T 85 4 T 110 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="result-section" id="resultSection" hidden aria-live="polite">
+      <div class="result-heading">
+        <div>
+          <p class="eyebrow">Price comparison</p>
+          <h2 id="resultName"></h2>
+        </div>
+        <button class="text-control" id="clearResult" type="button">Clear result</button>
+      </div>
+      <p class="result-message" id="resultMessage" role="status"></p>
+      <form class="confirm-product" id="confirmForm" hidden>
+        <label for="confirmedName">We could not read the product name. Enter it to continue.</label>
+        <div class="inline-form">
+          <input id="confirmedName" name="name" required minlength="2" autocomplete="off">
+          <button class="button button-primary" type="submit">Compare name</button>
+        </div>
+      </form>
+      <div class="result-layout" id="resultLayout" hidden>
+        <div class="result-main">
+          <section class="panel stores-panel" aria-labelledby="storesTitle">
+            <div class="panel-heading">
+              <div><p class="eyebrow">Live store checks</p><h3 id="storesTitle">Prices by store</h3></div>
+              <p class="source-saving" id="sourceSaving"></p>
+            </div>
+            <div class="store-table" id="storeRows" role="list"></div>
+            <div class="catalog-review" id="catalogReview" hidden></div>
+          </section>
+          <section class="panel history-panel" aria-labelledby="historyTitle">
+            <div class="panel-heading">
+              <div><p class="eyebrow">Recorded observations</p><h3 id="historyTitle">Price history</h3></div>
+            </div>
+            <div id="historyChart" class="history-chart"></div>
+          </section>
+        </div>
+        <aside class="result-side">
+          <section class="panel radar-panel" aria-labelledby="radarTitle">
+            <p class="eyebrow">Deal Radar</p>
+            <h3 id="radarTitle">Buy or wait?</h3>
+            <div class="radar-gauge" id="radarGauge" aria-label="Price history verdict">
+              <svg viewBox="0 0 240 135" role="img" aria-label="Semicircular buy or wait gauge">
+                <path class="gauge-track" d="M22 120a98 98 0 0 1 196 0"/>
+                <path class="gauge-wait" d="M22 120a98 98 0 0 1 98-98"/>
+                <path class="gauge-buy" d="M120 22a98 98 0 0 1 98 98"/>
+                <path class="gauge-needle" d="M120 119 120 39"/>
+                <circle cx="120" cy="119" r="7"/>
+              </svg>
+              <span class="gauge-label gauge-label-wait">Wait</span>
+              <span class="gauge-label gauge-label-buy">Buy</span>
+            </div>
+            <p class="verdict-copy" id="verdictCopy"></p>
+          </section>
+          <section class="panel track-panel" id="track">
+            <div class="panel-heading">
+              <div><p class="eyebrow">Price Drop Bell</p><h3>Track this price</h3></div>
+              <svg class="bell-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+            </div>
+            <form id="trackForm" class="track-form">
+              <label for="targetPrice">Target price (&#8377;)</label>
+              <input id="targetPrice" name="targetPrice" type="number" min="1" step="1" required inputmode="numeric">
+              <label for="trackEmail">Email</label>
+              <input id="trackEmail" name="email" type="email" required autocomplete="email">
+              <button class="button button-primary button-wide" type="submit">Track price</button>
+              <p id="trackMessage" class="form-message" role="status"></p>
+            </form>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section class="features-section section-wrap" id="features">
+      <div class="section-intro">
+        <p class="eyebrow">Price tracking tools</p>
+        <h2>Everything you need to compare before buying</h2>
+        <p>Honest comparison tools built to cut through inflated retail markups and track genuine price drops.</p>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card">
+          <h3>Price Comparison</h3>
+          <p>Compare verified offers from available stores side by side with direct links and live timestamps.</p>
+          <a class="feature-action" href="#compare">Compare stores <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="feature-card">
+          <h3>Price History</h3>
+          <p>See how the price has changed over time with recorded daily observations and genuine historical lows.</p>
+          <a class="feature-action" href="#compare">View price trend <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="feature-card">
+          <h3>Deal Radar</h3>
+          <p>Use available price history to decide whether to buy now or wait for the next price reduction.</p>
+          <a class="feature-action" href="#compare">Check buy verdict <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="feature-card">
+          <h3>Price Tracking</h3>
+          <p>Set a target price and receive an alert when a supported retailer drops to or below your budget.</p>
+          <a class="feature-action" href="#compare">Set price drop bell <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="how-section section-wrap" id="how">
+      <div class="section-intro">
+        <p class="eyebrow">How it works</p>
+        <h2>One product. A clearer decision.</h2>
+      </div>
+      <div class="steps">
+        <article class="step-card"><span class="step-index">01</span><h3>Paste</h3><p>Paste a supported product link or search by its name.</p></article>
+        <article class="step-card"><span class="step-index">02</span><h3>Compare</h3><p>See checked store prices, their timestamps, and recorded history.</p></article>
+        <article class="step-card"><span class="step-index">03</span><h3>Track</h3><p>Set a target price and an email address for your alert.</p></article>
+      </div>
+    </section>
+
+    <section class="deals-section section-wrap" id="deals">
+      <div class="section-heading-row">
+        <div class="section-intro"><p class="eyebrow">Catalog</p><h2>Live deals</h2></div>
+        <a class="text-link" href="products.html">Browse products <span aria-hidden="true">→</span></a>
+      </div>
+      <p class="section-note" id="catalogMessage" role="status">Loading the GadgetVerse catalog…</p>
+      <div class="deal-grid" id="featuredDeals"></div>
+    </section>
+
+    <section class="trust-section section-wrap" id="trust">
+      <div class="trust-container">
+        <div class="trust-header">
+          <p class="eyebrow">Integrity &amp; data handling</p>
+          <h2>How we handle prices &amp; your data</h2>
+          <p>GadgetVerse is designed around consumer transparency: no invented discounts, no tracking bloat, and no fake urgency.</p>
+        </div>
+        <div class="trust-grid">
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <h4>No Fabricated Prices</h4>
+              <p>Every price is queried live or retrieved from logged observations. If a store is unconfigured or unavailable, we display it honestly.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h4>Target Price Privacy</h4>
+              <p>Alert emails are stored solely to deliver your requested price drop notification. Never sold or shared with advertiser networks.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
+            </div>
+            <div>
+              <h4>Direct Retailer Links</h4>
+              <p>Store links navigate directly to verified retailer search or product pages without misleading intermediate ad networks.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-bullet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <div>
+              <h4>Verifiable Timestamps</h4>
+              <p>Every store offer displays the exact timestamp it was observed so you always know how fresh the data is.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-columns section-wrap">
+      <div class="footer-col footer-col-brand">
+        <a class="brand" href="index.html" aria-label="GadgetVerse home">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v16H6zM11 13h10M11 18h6"/></svg>
+          <span>GadgetVerse</span>
+        </a>
+        <p class="brand-desc">
+          Independent shopping intelligence for electronics and gadgets in India. Compare verified store offers, track genuine price trends, and choose the right time to buy.
+        </p>
+        <div class="footer-badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>Search-first verified data</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Explore</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="index.html#compare">Price Comparison</a></li>
+          <li><a href="products.html">Product Catalog</a></li>
+          <li><a href="index.html#features">Deal Radar</a></li>
+          <li><a href="index.html#deals">Catalog Deals</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Supported Stores</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="https://www.amazon.in" target="_blank" rel="noopener noreferrer">Amazon India</a></li>
+          <li><a href="https://www.flipkart.com" target="_blank" rel="noopener noreferrer">Flipkart</a></li>
+          <li><a href="https://www.croma.com" target="_blank" rel="noopener noreferrer">Croma</a></li>
+          <li><a href="https://www.reliancedigital.in" target="_blank" rel="noopener noreferrer">Reliance Digital</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-heading">Trust &amp; Platform</h4>
+        <ul class="footer-links" role="list">
+          <li><a href="about.html">About GadgetVerse</a></li>
+          <li><a href="contact.html">Contact &amp; Support</a></li>
+          <li><a href="index.html#trust">Data Integrity</a></li>
+          <li><a href="about.html">Editorial Catalog</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom section-wrap">
+      <p>&copy; 2026 GadgetVerse. Store trademarks, brand names, and logos belong to their respective retailers.</p>
+      <div class="footer-meta">
+        <span>Indian Rupee (INR &#8377;)</span>
+        <span>•</span>
+        <span>Zero sponsored rankings</span>
+      </div>
+    </div>
+  </footer>
+  <dialog id="signInDialog" class="sign-in-dialog">
+    <form method="dialog">
+      <button class="dialog-close" aria-label="Close">Close</button>
+      <p class="eyebrow">GadgetVerse account</p>
+      <h2>Sign in is not available</h2>
+      <p>Account sign-in is not configured for this site. You can still compare products and save a price alert.</p>
+    </form>
+  </dialog>
+</body>
+</html>

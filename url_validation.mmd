@@ -1,0 +1,150 @@
+flowchart TD
+    %% Global Styling Definitions for Academic Report
+    classDef startEnd fill:#0f172a,stroke:#0f172a,color:#ffffff,font-weight:600,font-size:12px,rx:18,ry:18
+    classDef clientNode fill:#f8fafc,stroke:#475569,stroke-width:1.5px,color:#0f172a,font-size:11px,rx:6,ry:6
+    classDef decisionNode fill:#f1f5f9,stroke:#0f766e,stroke-width:2px,color:#0f172a,font-size:11px,rx:4,ry:4
+    classDef securityNode fill:#fef2f2,stroke:#dc2626,stroke-width:1.5px,color:#991b1b,font-size:11px,rx:6,ry:6
+    classDef processNode fill:#f0fdf4,stroke:#16a34a,stroke-width:1.5px,color:#14532d,font-size:11px,rx:6,ry:6
+    classDef externalNode fill:#eff6ff,stroke:#2563eb,stroke-width:1.5px,color:#1e3a8a,font-size:11px,rx:6,ry:6
+    classDef dbNode fill:#faf5ff,stroke:#9333ea,stroke-width:1.5px,color:#581c87,font-size:11px,rx:6,ry:6
+    classDef alertNode fill:#fffbeb,stroke:#d97706,stroke-width:1.5px,color:#92400e,font-size:11px,rx:6,ry:6
+
+    START(["User Visits GadgetVerse Web App"]):::startEnd
+
+    subgraph P1 ["Phase 1: Client Request Ingestion (Frontend — Vercel / Static ES Modules)"]
+        INPUT["User Inputs Product Name or Pastes Retailer URL into Search Form"]:::clientNode
+        NORM_INPUT["Client Sanitization (tracker.js): Collapse Extra Spaces & Truncate to ≤100 Chars"]:::clientNode
+        DISPATCH_REQ["Dispatch Asynchronous HTTP GET /api/compare with Loading Skeletons"]:::clientNode
+    end
+
+    subgraph P2 ["Phase 2: API Gateway, SSRF Defense & URL Ingestion (Backend — Render)"]
+        INPUT_TYPE{"Input Classification:<br/>Retailer URL or Product Query?"}:::decisionNode
+        
+        URL_SECURITY{"Strict Ingestion & Security Pipeline (lib/scanner.js & lib/compare.js):<br/>• Anti-SSRF: HTTPS Only, Block Private IPs (127.0.0.1, 10.0.0.0/8, 192.168.0.0/16)<br/>• Domain Allowlist: amazon.in, flipkart.com, croma.com, reliancedigital.in<br/>• Resolve Redirects (Max 5 Hops) & Scrape JSON-LD (@type: Product) / OpenGraph Title"}:::decisionNode
+        
+        NORM_TERM["Standardized Search Term<br/>(Extracted Title or Direct User Query)"]:::processNode
+        QUERY_VAL{"Query Length Valid?<br/>(2 ≤ length ≤ 100)"}:::decisionNode
+        
+        HTTP_ERR["HTTP 400 / 403 / 422 Error Response:<br/>(SSRF Blocked, Invalid Domain, Unauthorized Scrape, or Missing Title)"]:::securityNode
+        CLIENT_NOTIFY["Frontend (tracker.js): Display Error Toast or Fallback Title Modal (#confirmForm)"]:::securityNode
+    end
+
+    subgraph P3 ["Phase 3: Concurrent Multi-Store Adapter Registry (lib/adapters/)"]
+        REGISTRY["StoreRegistry: Parallel Dispatch via Promise.allSettled (Timeout: 4500ms)"]:::processNode
+        AD_AMAZON["AmazonAdapter<br/>PA-API v5 / Creator Auth / Anti-Bot Check"]:::externalNode
+        AD_FLIPKART["FlipkartAdapter<br/>Affiliate API / Scraping Price Parser"]:::externalNode
+        AD_CROMA["CromaAdapter<br/>Enterprise API / SPA Rendering Detection"]:::externalNode
+        AD_RELIANCE["RelianceDigitalAdapter<br/>Official Partner API / Direct Search URL"]:::externalNode
+        OFFERS_RAW["Collect Standardized Store Responses (Price, Currency: INR, Title, Direct URL, AsOf)"]:::processNode
+    end
+
+    subgraph P4 ["Phase 4: Product Normalization, Matching & Comparability Engine (lib/match.js)"]
+        EXTRACT_ATTR["Extract Query & Offer Attributes (Brand, Model Identifiers, Storage, Condition)"]:::processNode
+        COMPARE_ATTR{"Comparability Check:<br/>Identical Model & Storage?<br/>Accessory (Case/Cable) Rejected?"}:::decisionNode
+        VALID_URL{"Direct Product Link Valid?<br/>(Exclude /search/ URLs)"}:::decisionNode
+        CHECK_FRESH{"Verified In-Stock Offer?<br/>(Currency: INR, Age ≤ Limit)"}:::decisionNode
+        
+        SET_VERIFIED["Set Status: 'verified'<br/>Exact Model Match & Confirmed Active Price"]:::processNode
+        SET_UNAVAIL["Set Status: 'not_configured' / 'unavailable'<br/>Attach Official Retailer Search Fallback Link"]:::alertNode
+        
+        SORT_CHEAPEST["Sort Verified Offers Ascending by Price; Identify Lowest 'cheapest' Offer"]:::processNode
+        COMP_SAVINGS["Calculate Net Savings & Savings % vs Next Best Store (if ≥2 Verified Offers)"]:::processNode
+    end
+
+    subgraph P5 ["Phase 5: Data Persistence & Historical Trend Analysis (Supabase Database)"]
+        SUPABASE_CHECK{"Supabase Configured?<br/>(URL & Service Key)"}:::decisionNode
+        UPSERT_OBS["Upsert Fresh Verified Offers to 'price_observations' Table"]:::dbNode
+        FETCH_TIMELINE["Query Date-Wise Historical Observations for Product ID"]:::dbNode
+        NO_DB_NOTE["Flag Transparent Notice: Catalog and History Offline"]:::alertNode
+        
+        RADAR_EVAL["Deal Radar Engine (lib/history.js):<br/>Aggregate Observations Across Distinct Days"]:::processNode
+        DATE_SPAN{"Distinct Observation<br/>Dates ≥ 2?"}:::decisionNode
+        VERDICT_BUY["Verdict: 'Buy' (Price ≤ 15th Percentile) or 'Wait' (Elevated)"]:::processNode
+        VERDICT_INSUF["Verdict: 'Insufficient Data'<br/>(Honest 0-Day / 1-Day Baseline)"]:::alertNode
+    end
+
+    subgraph P6 ["Phase 6: Result Presentation, User Interaction & Price Alerts (Frontend & Worker)"]
+        RENDER_PAGE["Client Result View (tracker.js):<br/>Display Store Table, Price Rolls, Deal Radar Gauge & Interactive SVG Chart"]:::clientNode
+        
+        SUBMIT_ALERT["User Inputs Target Price (INR) & Email in Price Drop Bell"]:::clientNode
+        POST_TRACK["POST /api/track: Server-Side Validation & Upsert to 'price_alerts' Table"]:::processNode
+        CONFIRM_ALERT["Display User Status: 'Price target saved' (with Provider State)"]:::clientNode
+        
+        SCHEDULED_CRON["Scheduled Worker (lib/alert-checker.js / Render Cron Job):<br/>Poll Active Alerts Against New Verified Observations"]:::processNode
+        EMAIL_PROVIDER{"Email Delivery<br/>Provider Configured?<br/>(RESEND_API_KEY)"}:::decisionNode
+        SEND_EMAIL["Dispatch Price Drop Notification Email via Resend API"]:::processNode
+        LOG_PENDING["Mark Alert Status: 'pending_provider' (Prevent Silent Fake Success)"]:::alertNode
+    end
+
+    END_SUCCESS(["User Explores Verified Comparison & Monitors Target Drop"]):::startEnd
+
+    %% --- Workflow Linkages ---
+    START --> INPUT
+    INPUT --> NORM_INPUT
+    NORM_INPUT --> DISPATCH_REQ
+    DISPATCH_REQ --> INPUT_TYPE
+
+    %% Phase 2: Ingestion & URL Security
+    INPUT_TYPE -- "Retailer URL" --> URL_SECURITY
+    URL_SECURITY -- "Security Violation / Unparsable" --> HTTP_ERR
+    URL_SECURITY -- "Title Successfully Extracted" --> NORM_TERM
+
+    INPUT_TYPE -- "Product Search Query" --> NORM_TERM
+    NORM_TERM --> QUERY_VAL
+    QUERY_VAL -- "Invalid (<2 or >100 chars)" --> HTTP_ERR
+    HTTP_ERR --> CLIENT_NOTIFY
+    CLIENT_NOTIFY ~~~ REGISTRY
+
+    QUERY_VAL -- "Valid Query (2 to 100 chars)" --> REGISTRY
+
+    %% Phase 3: Adapters
+    REGISTRY --> AD_AMAZON
+    REGISTRY --> AD_FLIPKART
+    REGISTRY --> AD_CROMA
+    REGISTRY --> AD_RELIANCE
+    AD_AMAZON --> OFFERS_RAW
+    AD_FLIPKART --> OFFERS_RAW
+    AD_CROMA --> OFFERS_RAW
+    AD_RELIANCE --> OFFERS_RAW
+
+    %% Phase 4: Matching & Comparability
+    OFFERS_RAW --> EXTRACT_ATTR
+    EXTRACT_ATTR --> COMPARE_ATTR
+    COMPARE_ATTR -- "Mismatch / Accessory" --> SET_UNAVAIL
+    COMPARE_ATTR -- "Exact Variant Match" --> VALID_URL
+    VALID_URL -- "Generic / Search URL" --> SET_UNAVAIL
+    VALID_URL -- "Valid Product URL" --> CHECK_FRESH
+    CHECK_FRESH -- "Stale / Out of Stock" --> SET_UNAVAIL
+    CHECK_FRESH -- "Verified In-Stock" --> SET_VERIFIED
+
+    SET_VERIFIED --> SORT_CHEAPEST
+    SET_UNAVAIL --> SORT_CHEAPEST
+    SORT_CHEAPEST --> COMP_SAVINGS
+
+    %% Phase 5: Supabase Persistence & History
+    COMP_SAVINGS --> SUPABASE_CHECK
+    SUPABASE_CHECK -- "Configured" --> UPSERT_OBS
+    UPSERT_OBS --> FETCH_TIMELINE
+    FETCH_TIMELINE --> RADAR_EVAL
+    SUPABASE_CHECK -- "Not Configured" --> NO_DB_NOTE
+    NO_DB_NOTE --> RADAR_EVAL
+
+    RADAR_EVAL --> DATE_SPAN
+    DATE_SPAN -- "≥ 2 Distinct Dates" --> VERDICT_BUY
+    DATE_SPAN -- "< 2 Distinct Dates" --> VERDICT_INSUF
+
+    %% Phase 6: Rendering & Alerts
+    VERDICT_BUY --> RENDER_PAGE
+    VERDICT_INSUF --> RENDER_PAGE
+
+    RENDER_PAGE --> SUBMIT_ALERT
+    SUBMIT_ALERT --> POST_TRACK
+    POST_TRACK --> CONFIRM_ALERT
+    CONFIRM_ALERT --> SCHEDULED_CRON
+    SCHEDULED_CRON --> EMAIL_PROVIDER
+    EMAIL_PROVIDER -- "Configured (Resend Key)" --> SEND_EMAIL
+    EMAIL_PROVIDER -- "Unconfigured" --> LOG_PENDING
+
+    RENDER_PAGE --> END_SUCCESS
+    SEND_EMAIL --> END_SUCCESS
+    LOG_PENDING --> END_SUCCESS
